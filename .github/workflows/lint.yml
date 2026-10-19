@@ -26,7 +26,7 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v9
         with:
           # Pinned rather than "latest": golangci-lint-action@v6's "latest" resolved to
           # v1.64.8 (built with go1.24) in practice, which refuses to analyze a module
