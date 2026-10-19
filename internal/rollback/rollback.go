@@ -16,6 +16,12 @@ import (
 type CompletedStep struct {
 	Step *runbook.Step
 	Host inventory.Host
+
+	// ResolvedRollbackCommand is Step.Rollback.Command with variables already
+	// interpolated at the time the step succeeded. The executor sets this so that a
+	// later edit to a variable (via an approval prompt) cannot change what a rollback
+	// does after the fact. Empty if Step.Rollback is nil.
+	ResolvedRollbackCommand string
 }
 
 // Outcome is the result of rolling back a single completed step on a single host.

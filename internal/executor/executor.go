@@ -10,11 +10,11 @@ import (
 	"github.com/Leo-Galli/opsrun/internal/runbook"
 )
 
-// StepState is the state of a single step on a single host.
+// StepState is the state of a single step on a single host. Valid transitions are
+// enforced by Transition and documented in docs/architecture.md.
 type StepState string
 
-// Supported step states and their valid transitions are documented in
-// docs/architecture.md and enforced by the Phase 4 state machine implementation.
+// Supported step states.
 const (
 	StepPending         StepState = "pending"
 	StepWaitingApproval StepState = "waiting_approval"
@@ -27,22 +27,40 @@ const (
 	StepRollbackFailed  StepState = "rollback_failed"
 )
 
+// IsTerminal reports whether a step in this state will never transition again.
+func (s StepState) IsTerminal() bool {
+	switch s {
+	case StepSucceeded, StepFailed, StepSkipped, StepRolledBack, StepRollbackFailed:
+		return true
+	default:
+		return false
+	}
+}
+
 // Options configures a single Executor run.
 type Options struct {
-	DryRun      bool
-	Interactive bool
-	Concurrency int
-	Vars        map[string]any
+	RunID          string // if empty, a new run id is generated
+	RunbookPath    string // recorded in checkpoints so Resume can reload the runbook
+	DryRun         bool
+	Interactive    bool
+	Concurrency    int
+	Vars           map[string]any
+	CheckpointDir  string // if set, a checkpoint is written after every step completes
+	HostRollout    RolloutStrategy
+	ApprovalPolicy runbook.ApprovalPolicy // overrides the runbook's own policy when Mode is non-empty
 }
 
 // Summary is the outcome of a completed or aborted run.
 type Summary struct {
-	RunID  string
-	Failed bool
-	States map[string]StepState // step id -> final state
+	RunID       string
+	Failed      bool
+	StepStates  map[string]map[string]StepState // step id -> host name -> final state
+	FailedStep  string
+	RollbackRan bool
 }
 
 // Executor runs a parsed, validated runbook to completion or failure.
 type Executor interface {
 	Run(ctx context.Context, rb *runbook.Runbook, opts Options) (*Summary, error)
+	Resume(ctx context.Context, runID string, opts Options) (*Summary, error)
 }

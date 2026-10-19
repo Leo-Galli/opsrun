@@ -136,7 +136,11 @@ and tested in Phase 4 (`internal/executor`).
   local implementation. Depends on `internal/inventory` for host parameters only.
 - `internal/dag`: pure graph algorithms over `internal/runbook.Step`. No I/O.
 - `internal/executor`: orchestrates `internal/dag`, `internal/ssh`, `internal/approval`,
-  `internal/rollback`, and `internal/audit` to run a validated runbook.
+  `internal/rollback`, and `internal/audit` to run a validated runbook. It also calls
+  `internal/parser.Interpolate` to resolve `{{ .Vars.x }}` references in a step's
+  commands immediately before running or rolling them back, and (only for `Resume`)
+  holds a `parser.RunbookParser` to reload the original runbook from the path recorded
+  in a checkpoint.
 - `internal/approval`, `internal/rollback`, `internal/audit`, `internal/secrets`: focused,
   independently testable interfaces consumed by the executor.
 - `internal/config`: parses and validates `opsrun.yaml` and translates it into the types
