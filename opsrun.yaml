@@ -1,0 +1,48 @@
+# Sample OpsRun configuration. Copy to your own path and pass it with --config, or set
+# OPSRUN_CONFIG. Every value here can be overridden by an OPSRUN_-prefixed environment
+# variable (see docs/architecture.md) or by a command-line flag.
+
+hosts:
+  - name: web-1
+    address: 10.0.1.10
+    port: 22
+    user: ops
+    identity_file: ~/.ssh/id_ed25519
+    groups: [web]
+
+  - name: web-2
+    address: 10.0.1.11
+    port: 22
+    user: ops
+    identity_file: ~/.ssh/id_ed25519
+    groups: [web]
+
+  - name: db-1
+    address: 10.0.2.10
+    port: 22
+    user: ops
+    identity_file: ~/.ssh/id_ed25519
+    proxy_jump: bastion.internal:22
+    groups: [db]
+
+concurrency:
+  global_max_connections: 50
+  per_host_max_sessions: 2
+  max_parallel_steps: 10
+
+timeouts:
+  connect: 10s
+  command: 5m
+  idle: 1m
+
+audit:
+  log_path: ./audit/opsrun-audit.jsonl
+  signing_key_path: ""
+
+approval:
+  mode: per_step
+  timeout: 5m
+
+secrets:
+  env_prefix: OPSRUN_SECRET_
+  files_dir: ""
