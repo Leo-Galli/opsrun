@@ -1,0 +1,5 @@
+name=minimal-runbook version= service= severity= author=
+targets=[]
+approval mode=none timeout=0s
+step id=only-step title="Do the one thing" depends_on=[] confirm=false retries=0 continue_on_error=false mode=parallel read_only=false
+  run target=web timeout=10s command="echo hello"

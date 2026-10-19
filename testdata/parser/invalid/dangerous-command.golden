@@ -1,0 +1,2 @@
+error step=wipe msg=command matches dangerous pattern "(?i)rm\\s+-rf\\s+/(\\s|$)"
+warning step=wipe msg=destructive step has no rollback action

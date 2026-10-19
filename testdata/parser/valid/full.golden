@@ -1,0 +1,14 @@
+name=full-feature-runbook version=2.0 service=example-svc severity=critical author=sre-team
+targets=[group:web host:db-primary]
+var cache_dir type=string default=/var/cache/app required=false
+var dry_run type=bool default=false required=false
+var grace_period type=duration default=30s required=false
+var retry_count type=int default=3 required=false
+approval mode=all timeout=20m0s
+step id=first title="First step" depends_on=[] confirm=false retries=0 continue_on_error=false mode=parallel read_only=true
+  check expect_exit=0 command="echo checking"
+step id=second title="Second step" depends_on=[first] confirm=true retries=2 continue_on_error=false mode=serial read_only=false
+  approval_override mode=per_step timeout=2m0s
+  run target=web timeout=45s command="echo retry={{ .Vars.retry_count }} dry_run={{ .Vars.dry_run }} cache={{ .Vars.cache_dir }} grace={{ .Vars.grace_period }}"
+  check expect_exit=0 command="echo ok"
+  rollback target= timeout=0s command="echo rollback"
