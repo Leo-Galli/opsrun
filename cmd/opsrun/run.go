@@ -21,31 +21,43 @@ import (
 
 func newRunCmd(flags *globalFlags) *cobra.Command {
 	var checkpointDir string
+	rollout := &rolloutFlags{}
 
 	cmd := &cobra.Command{
 		Use:   "run <runbook.md>",
 		Short: "Execute a runbook",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doRun(cmd, flags, args[0], "", checkpointDir)
+			strategy, err := buildRolloutStrategy(rollout)
+			if err != nil {
+				return withExitCode(ExitGenericError, err)
+			}
+			return doRun(cmd, flags, args[0], "", checkpointDir, strategy)
 		},
 	}
 	cmd.Flags().StringVar(&checkpointDir, "checkpoint-dir", defaultCheckpointDir(), "directory to write run checkpoints to, for 'opsrun resume'")
+	addRolloutFlags(cmd, rollout)
 	return cmd
 }
 
 func newResumeCmd(flags *globalFlags) *cobra.Command {
 	var checkpointDir string
+	rollout := &rolloutFlags{}
 
 	cmd := &cobra.Command{
 		Use:   "resume <run-id>",
 		Short: "Resume a previously interrupted or failed run from its checkpoint",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doRun(cmd, flags, "", args[0], checkpointDir)
+			strategy, err := buildRolloutStrategy(rollout)
+			if err != nil {
+				return withExitCode(ExitGenericError, err)
+			}
+			return doRun(cmd, flags, "", args[0], checkpointDir, strategy)
 		},
 	}
 	cmd.Flags().StringVar(&checkpointDir, "checkpoint-dir", defaultCheckpointDir(), "directory checkpoints were written to by 'opsrun run'")
+	addRolloutFlags(cmd, rollout)
 	return cmd
 }
 
@@ -56,7 +68,7 @@ func defaultCheckpointDir() string {
 // doRun implements both `run` (runbookPath set) and `resume` (runID set). It uses the
 // Bubble Tea TUI when stdout is a real terminal and --output is not json, falling back
 // automatically to plain, line-oriented text otherwise (CI, pipes, --output json).
-func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpointDir string) error {
+func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpointDir string, strategy executor.RolloutStrategy) error {
 	cfg, err := loadConfig(flags.config)
 	if err != nil {
 		return withExitCode(ExitGenericError, err)
@@ -153,6 +165,7 @@ func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpoin
 		Concurrency:   flags.concurrency,
 		Vars:          vars,
 		CheckpointDir: checkpointDir,
+		HostRollout:   strategy,
 	}
 
 	var summary *executor.Summary

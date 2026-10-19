@@ -136,7 +136,9 @@ opsrun validate examples/runbooks/full-disk.md
 opsrun plan examples/runbooks/full-disk.md --vars-file prod.vars.yaml
 ```
 
-Run it for real, with per-step approval prompts and automatic rollback on failure:
+Run it for real, with per-step approval prompts and automatic rollback on failure. The
+Bubble Tea TUI opens automatically on a real terminal; add `--output json` or pipe the
+output to get the plain-text fallback instead:
 
 ```bash
 opsrun run examples/runbooks/full-disk.md \
@@ -145,19 +147,28 @@ opsrun run examples/runbooks/full-disk.md \
   --interactive
 ```
 
-If the run is interrupted (network loss, Ctrl+C, SIGTERM), resume it from its last
-checkpoint:
+Roll a change across many hosts gradually instead of all at once, with `--strategy
+rolling` (stopping if more than `--max-failure-percent` of hosts fail) or `--strategy
+canary` (a small canary batch first, then the rest):
 
 ```bash
-opsrun resume <run-id>
+opsrun run examples/runbooks/service-restart.md --config opsrun.yaml \
+  --strategy rolling --batch-size 5 --max-failure-percent 10
 ```
 
-After the incident, export a post-mortem timeline straight from the tamper-evident audit
-log:
+If the run is interrupted (network loss, Ctrl+C, SIGTERM) or fails partway through,
+resume it from its last checkpoint using the run id printed at the end of the run:
 
 ```bash
-opsrun audit verify <run-id>
-opsrun audit export <run-id> --format markdown > postmortem.md
+opsrun resume <run-id> --checkpoint-dir .opsrun/checkpoints
+```
+
+After the incident, verify the tamper-evident audit log and export a post-mortem
+timeline:
+
+```bash
+opsrun audit verify --log ./audit/opsrun-audit.jsonl
+opsrun audit export --log ./audit/opsrun-audit.jsonl --run-id <run-id> > postmortem.md
 ```
 
 More complete examples live in `examples/runbooks/`: a service restart with health check,

@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/Leo-Galli/opsrun/internal/executor"
 )
 
 // runCLI executes args against a fresh root command and returns combined stdout,
@@ -123,6 +125,32 @@ func TestCLIAuditKeygenAndVerifyRoundTrip(t *testing.T) {
 
 func TestCLIRunRequiresRunbookArg(t *testing.T) {
 	_, _, err := runCLI(t, "run")
+	require.Error(t, err)
+}
+
+func TestCLIRunRejectsUnknownStrategy(t *testing.T) {
+	path := writeTempRunbookFile(t, validRunbookMD)
+	_, _, err := runCLI(t, "run", path, "--strategy", "bogus")
+	require.Error(t, err)
+	var ece *exitCodeError
+	require.ErrorAs(t, err, &ece)
+	require.Equal(t, ExitGenericError, ece.code)
+}
+
+func TestBuildRolloutStrategy(t *testing.T) {
+	s, err := buildRolloutStrategy(&rolloutFlags{strategy: "all-at-once"})
+	require.NoError(t, err)
+	require.IsType(t, executor.AllAtOnceStrategy{}, s)
+
+	s, err = buildRolloutStrategy(&rolloutFlags{strategy: "rolling", batchSize: 2, maxFailurePercent: 25})
+	require.NoError(t, err)
+	require.Equal(t, executor.RollingStrategy{BatchSize: 2, MaxFailurePercent: 25}, s)
+
+	s, err = buildRolloutStrategy(&rolloutFlags{strategy: "canary", canaryCount: 1})
+	require.NoError(t, err)
+	require.Equal(t, executor.CanaryStrategy{CanaryCount: 1}, s)
+
+	_, err = buildRolloutStrategy(&rolloutFlags{strategy: "nope"})
 	require.Error(t, err)
 }
 
