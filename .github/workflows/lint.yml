@@ -26,10 +26,12 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           # Pinned rather than "latest": golangci-lint-action@v6's "latest" resolved to
           # v1.64.8 (built with go1.24) in practice, which refuses to analyze a module
           # whose go.mod targets a newer Go version (1.27) than it was built with.
+          # golangci-lint v2 (our .golangci.yml schema) additionally requires at least
+          # golangci-lint-action v7, per that action's own error message.
           version: v2.15.0
           args: --timeout=5m
