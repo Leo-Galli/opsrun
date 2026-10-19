@@ -9,11 +9,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
 	"github.com/Leo-Galli/opsrun/internal/approval"
 	"github.com/Leo-Galli/opsrun/internal/executor"
 	"github.com/Leo-Galli/opsrun/internal/parser"
+	"github.com/Leo-Galli/opsrun/internal/runbook"
+	"github.com/Leo-Galli/opsrun/internal/tui"
 )
 
 func newRunCmd(flags *globalFlags) *cobra.Command {
@@ -50,13 +53,14 @@ func defaultCheckpointDir() string {
 	return ".opsrun/checkpoints"
 }
 
-// doRun implements both `run` (runbookPath set) and `resume` (runID set).
+// doRun implements both `run` (runbookPath set) and `resume` (runID set). It uses the
+// Bubble Tea TUI when stdout is a real terminal and --output is not json, falling back
+// automatically to plain, line-oriented text otherwise (CI, pipes, --output json).
 func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpointDir string) error {
 	cfg, err := loadConfig(flags.config)
 	if err != nil {
 		return withExitCode(ExitGenericError, err)
 	}
-
 	isResume := runID != ""
 
 	vars, err := resolveVars(flags.varsFile, flags.vars)
@@ -64,22 +68,56 @@ func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpoin
 		return withExitCode(ExitGenericError, err)
 	}
 
+	// Validate up front for a fresh run, so a bad runbook never gets as far as drawing
+	// the TUI. Resume re-validates implicitly: Executor.Resume re-parses the original
+	// runbook from the checkpoint before continuing.
+	var rb *runbook.Runbook
+	if !isResume {
+		rb, err = parseRunbookFile(runbookPath)
+		if err != nil {
+			return withExitCode(ExitGenericError, err)
+		}
+		validator, verr := parser.NewValidator(nil)
+		if verr != nil {
+			return withExitCode(ExitGenericError, verr)
+		}
+		if findings := validator.Validate(rb); hasErrors(findings) {
+			printFindings(cmd.ErrOrStderr(), findings, flags.output)
+			return withExitCode(ExitValidationFailed, fmt.Errorf("runbook %q failed validation", runbookPath))
+		}
+	}
+
 	out := cmd.OutOrStdout()
-	outFile, _ := out.(*os.File)
-	if outFile == nil {
-		outFile = os.Stdout
+	// Only a real *os.File can be a terminal; a buffer (as in tests, or anywhere
+	// cobra's output is redirected) never is, and must not be mistaken for stdout.
+	outFile, isRealFile := out.(*os.File)
+	if !isRealFile {
+		outFile = os.Stderr
+	}
+	useTUI := flags.output != "json" && isRealFile && isTerminal(outFile)
+
+	var emitter executor.Emitter
+	var model *tui.Model
+	var program *tea.Program
+	if useTUI {
+		model = tui.NewModel()
+		program = tea.NewProgram(model)
+		emitter = model.Emitter()
+	} else {
+		emitter = NewTextEmitter(out)
 	}
 
 	var gate approval.Gate
 	switch {
 	case flags.nonInteractive:
 		gate = NonInteractiveGate{}
+	case useTUI:
+		gate = model.Gate()
 	default:
 		gate = &TTYGate{In: os.Stdin, Out: cmd.ErrOrStderr()}
 	}
 
-	textEmitter := NewTextEmitter(out)
-	exec, auditSink, err := buildExecutor(cfg, flags.insecureSkipHostKeyVerification, outFile, textEmitter)
+	exec, auditSink, err := buildExecutor(cfg, flags.insecureSkipHostKeyVerification, outFile, emitter)
 	if err != nil {
 		return withExitCode(ExitGenericError, err)
 	}
@@ -100,7 +138,9 @@ func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpoin
 	go func() {
 		select {
 		case <-sigCh:
-			fmt.Fprintln(cmd.ErrOrStderr(), "\n[WAIT] interrupt received: stopping new steps and rolling back completed ones...")
+			if !useTUI {
+				fmt.Fprintln(cmd.ErrOrStderr(), "\n[WAIT] interrupt received: stopping new steps and rolling back completed ones...")
+			}
 			cancel()
 		case <-ctx.Done():
 		}
@@ -117,22 +157,24 @@ func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpoin
 
 	var summary *executor.Summary
 	var runErr error
-	if isResume {
-		summary, runErr = exec.Resume(ctx, runID, opts)
+	runFunc := func() {
+		if isResume {
+			summary, runErr = exec.Resume(ctx, runID, opts)
+		} else {
+			summary, runErr = exec.Run(ctx, rb, opts)
+		}
+	}
+
+	if useTUI {
+		go func() {
+			runFunc()
+			program.Quit() // in case the model did not already quit on EventRunFinished
+		}()
+		if _, perr := program.Run(); perr != nil {
+			return withExitCode(ExitGenericError, fmt.Errorf("TUI error: %w", perr))
+		}
 	} else {
-		runbook, perr := parseRunbookFile(runbookPath)
-		if perr != nil {
-			return withExitCode(ExitGenericError, perr)
-		}
-		validator, verr := parser.NewValidator(nil)
-		if verr != nil {
-			return withExitCode(ExitGenericError, verr)
-		}
-		if findings := validator.Validate(runbook); hasErrors(findings) {
-			printFindings(cmd.ErrOrStderr(), findings, flags.output)
-			return withExitCode(ExitValidationFailed, fmt.Errorf("runbook %q failed validation", runbookPath))
-		}
-		summary, runErr = exec.Run(ctx, runbook, opts)
+		runFunc()
 	}
 
 	if summary != nil {
