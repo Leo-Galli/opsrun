@@ -171,8 +171,27 @@ opsrun audit verify --log ./audit/opsrun-audit.jsonl
 opsrun audit export --log ./audit/opsrun-audit.jsonl --run-id <run-id> > postmortem.md
 ```
 
-More complete examples live in `examples/runbooks/`: a service restart with health check,
-a full-disk remediation, and a database failover.
+More complete, ready-to-adapt examples live in `examples/runbooks/`, each one validated
+and plan-tested as part of the test suite:
+
+| Runbook | Scenario |
+|---|---|
+| `full-disk.md` | Clear a cache directory and restart a service when disk is full |
+| `service-restart.md` | Restart a service with a pre-check, health check, and rollback |
+| `db-failover.md` | Promote a lagging-checked replica and repoint the application |
+| `cert-renewal.md` | Renew a TLS certificate with a backup-and-restore rollback |
+| `oom-mitigation.md` | Diagnose and recover from memory pressure on a worker fleet |
+| `log-cleanup.md` | Compress and delete old logs to relieve disk pressure |
+| `lb-node-drain.md` | Drain a host from a load balancer before maintenance, with a `secret: true` API token |
+| `rolling-deploy.md` | Deploy a new release gradually with `--strategy rolling` or `--strategy canary` |
+| `runaway-process.md` | Stop a runaway process, gracefully first, then forcefully |
+
+Try any of them immediately, with no SSH access required:
+
+```bash
+opsrun validate examples/runbooks/oom-mitigation.md
+opsrun plan examples/runbooks/lb-node-drain.md --var lb_api_token=dummy
+```
 
 ## Runbook format
 
