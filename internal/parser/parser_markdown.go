@@ -38,6 +38,7 @@ type frontMatterVariable struct {
 	Type       string `yaml:"type"`
 	Default    any    `yaml:"default"`
 	Required   bool   `yaml:"required"`
+	Secret     bool   `yaml:"secret"`
 	Validation string `yaml:"validation"`
 }
 
@@ -160,6 +161,7 @@ func buildRunbookFromFrontMatter(fm frontMatter) (*runbook.Runbook, error) {
 			Type:       runbook.VariableType(v.Type),
 			Default:    v.Default,
 			Required:   v.Required,
+			Secret:     v.Secret,
 			Validation: v.Validation,
 		}
 	}

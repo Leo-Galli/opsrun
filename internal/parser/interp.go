@@ -29,10 +29,29 @@ func ExtractVarRefs(command string) []string {
 	return out
 }
 
+// redactedPlaceholder replaces the value of a secret variable wherever a redacted
+// interpolation is requested, so audit logs, event streams, and TUI output never
+// contain the real value.
+const redactedPlaceholder = "***REDACTED***"
+
 // Interpolate replaces every {{ .Vars.name }} reference in command with its resolved,
 // shell-escaped value. It returns an error if a reference is not declared in declared,
-// or if a declared, required variable has no value and no default.
+// or if a declared, required variable has no value and no default. The result is meant
+// to be executed, never logged: use InterpolateRedacted for anything that is displayed,
+// emitted as an event, or written to the audit trail.
 func Interpolate(command string, declared map[string]runbook.Variable, values map[string]any) (string, error) {
+	return interpolate(command, declared, values, false)
+}
+
+// InterpolateRedacted behaves like Interpolate, except that variables declared with
+// secret: true are replaced with a fixed placeholder instead of their real value. Use
+// this for anything that is displayed to an operator, emitted as an event, or written
+// to the audit trail; use Interpolate only for the command actually sent to a Transport.
+func InterpolateRedacted(command string, declared map[string]runbook.Variable, values map[string]any) (string, error) {
+	return interpolate(command, declared, values, true)
+}
+
+func interpolate(command string, declared map[string]runbook.Variable, values map[string]any, redact bool) (string, error) {
 	var firstErr error
 	result := varRefPattern.ReplaceAllStringFunc(command, func(match string) string {
 		if firstErr != nil {
@@ -43,6 +62,9 @@ func Interpolate(command string, declared map[string]runbook.Variable, values ma
 		if !ok {
 			firstErr = fmt.Errorf("undeclared variable %q", name)
 			return match
+		}
+		if redact && v.Secret {
+			return shellEscape(redactedPlaceholder)
 		}
 		val, ok := values[name]
 		if !ok {

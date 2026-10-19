@@ -29,6 +29,7 @@ type Variable struct {
 	Type       VariableType
 	Default    any
 	Required   bool
+	Secret     bool   // if true, the resolved value is never written to logs or the audit trail
 	Validation string // optional regular expression the string form of the value must match
 	Position   Position
 }

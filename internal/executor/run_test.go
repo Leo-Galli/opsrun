@@ -291,6 +291,34 @@ func TestExecutorApprovalEditVariable(t *testing.T) {
 	require.Equal(t, "echo 'hola'", gotCommand)
 }
 
+func TestExecutorRedactsSecretVariablesFromEvents(t *testing.T) {
+	var gotCommand string
+	tr := ssh.NewFakeTransport(func(host inventory.Host, command string, _ ssh.RunOptions) (*ssh.Result, error) {
+		gotCommand = command
+		return &ssh.Result{ExitCode: 0}, nil
+	})
+	exec, rec := newExecutor(tr, newTestHosts("web-1"), nil)
+
+	rb := &runbook.Runbook{
+		Name:    "secret-redaction",
+		Targets: []runbook.Target{{Group: "all"}},
+		Vars:    map[string]runbook.Variable{"token": {Name: "token", Type: runbook.VariableTypeString, Secret: true}},
+		Steps: []*runbook.Step{
+			{ID: "a", Run: runAction("", "curl -H 'Authorization: {{ .Vars.token }}' example.com")},
+		},
+	}
+
+	summary, err := exec.Run(context.Background(), rb, Options{Vars: map[string]any{"token": "super-secret-value"}})
+	require.NoError(t, err)
+	require.False(t, summary.Failed)
+
+	require.Contains(t, gotCommand, "super-secret-value", "the real command sent to the transport must still carry the real value")
+
+	for _, e := range rec.Snapshot() {
+		require.NotContains(t, e.Command, "super-secret-value", "event %q must never carry a secret value", e.Kind)
+	}
+}
+
 func TestExecutorContinueOnErrorSkipsDependentsButNotWholeRun(t *testing.T) {
 	var ranC bool
 	tr := ssh.NewFakeTransport(func(host inventory.Host, command string, _ ssh.RunOptions) (*ssh.Result, error) {

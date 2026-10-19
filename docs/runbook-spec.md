@@ -26,6 +26,10 @@ vars:
     default: "/var/cache/app"
     required: false
     validation: "^/[a-zA-Z0-9/_-]+$"   # optional regular expression
+  api_token:
+    type: string
+    required: true
+    secret: true                  # never written to logs, events, or the audit trail
 approval:
   mode: per_step                  # none | per_step | all
   timeout: 5m
@@ -120,6 +124,12 @@ reference is a validation error, never a silent empty substitution. At execution
 values are shell-escaped (wrapped in single quotes, with embedded single quotes escaped)
 before interpolation, so a variable value can never break out of its argument position
 regardless of its contents.
+
+A variable declared with `secret: true` is interpolated with its real value only in the
+command actually sent to a host. Everywhere else it might otherwise appear — approval
+prompts, the TUI, emitted events, the audit log — it is replaced with `***REDACTED***`.
+Use `secret: true` for anything that should never be written to disk in plain text:
+API tokens, passwords, connection strings with embedded credentials, and the like.
 
 ## Validation
 

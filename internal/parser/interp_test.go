@@ -90,6 +90,27 @@ func TestInterpolate(t *testing.T) {
 	require.Equal(t, "plain text, no vars", out)
 }
 
+func TestInterpolateRedacted(t *testing.T) {
+	declared := map[string]runbook.Variable{
+		"password": {Name: "password", Type: runbook.VariableTypeString, Secret: true},
+		"name":     {Name: "name", Type: runbook.VariableTypeString},
+	}
+	out, err := InterpolateRedacted("login --user {{ .Vars.name }} --pass {{ .Vars.password }}", declared, map[string]any{
+		"name":     "alice",
+		"password": "hunter2",
+	})
+	require.NoError(t, err)
+	require.Equal(t, "login --user 'alice' --pass '***REDACTED***'", out)
+	require.NotContains(t, out, "hunter2")
+
+	real, err := Interpolate("login --user {{ .Vars.name }} --pass {{ .Vars.password }}", declared, map[string]any{
+		"name":     "alice",
+		"password": "hunter2",
+	})
+	require.NoError(t, err)
+	require.Contains(t, real, "hunter2")
+}
+
 func TestShellEscape(t *testing.T) {
 	require.Equal(t, "'hello'", shellEscape("hello"))
 	require.Equal(t, `'it'\''s'`, shellEscape("it's"))

@@ -82,11 +82,14 @@ func (e *DefaultExecutor) handleApproval(ctx context.Context, rs *runState, emit
 	return false, fmt.Errorf("step %q: too many variable edits without a decision", step.ID)
 }
 
+// interpolatedRunCommand renders step's run command for display (approval prompts,
+// events): secret-marked variables are redacted, since this value is shown to an
+// operator and emitted on the event stream, never sent to a Transport.
 func interpolatedRunCommand(rb *runbook.Runbook, step *runbook.Step, vars map[string]any) string {
 	if step.Run == nil {
 		return ""
 	}
-	cmd, err := parser.Interpolate(step.Run.Command, rb.Vars, vars)
+	cmd, err := parser.InterpolateRedacted(step.Run.Command, rb.Vars, vars)
 	if err != nil {
 		return step.Run.Command
 	}
@@ -164,14 +167,24 @@ func (e *DefaultExecutor) runOnHost(ctx context.Context, rs *runState, emitter E
 	return nil
 }
 
+// runAction interpolates and runs a single action. Two interpolations are produced
+// deliberately: cmd (with real secret values) is the only one ever passed to a
+// Transport; display (with secret-marked variables redacted) is the only one ever
+// emitted as an event, so a secret can never reach the TUI, the event recorder, or the
+// audit trail.
 func (e *DefaultExecutor) runAction(ctx context.Context, rs *runState, emitter Emitter, rb *runbook.Runbook, step *runbook.Step, host inventory.Host, action *runbook.Action, dryRun bool) error {
-	cmd, err := parser.Interpolate(action.Command, rb.Vars, rs.varsSnapshot())
+	vars := rs.varsSnapshot()
+	cmd, err := parser.Interpolate(action.Command, rb.Vars, vars)
 	if err != nil {
 		return fmt.Errorf("interpolate: %w", err)
 	}
+	display, err := parser.InterpolateRedacted(action.Command, rb.Vars, vars)
+	if err != nil {
+		display = cmd
+	}
 
 	if dryRun {
-		emitter.Emit(Event{Kind: EventCommandResult, Timestamp: e.now(), RunID: rs.runID, StepID: step.ID, Host: host.Name, Command: cmd, Message: "dry-run"})
+		emitter.Emit(Event{Kind: EventCommandResult, Timestamp: e.now(), RunID: rs.runID, StepID: step.ID, Host: host.Name, Command: display, Message: "dry-run"})
 		return nil
 	}
 
@@ -185,12 +198,12 @@ func (e *DefaultExecutor) runAction(ctx context.Context, rs *runState, emitter E
 	result, err := sess.Run(ctx, cmd, ssh.RunOptions{CommandTimeout: action.Timeout})
 	duration := e.now().Sub(start)
 	if err != nil {
-		emitter.Emit(Event{Kind: EventCommandResult, Timestamp: e.now(), RunID: rs.runID, StepID: step.ID, Host: host.Name, Command: cmd, Duration: duration, Err: err})
+		emitter.Emit(Event{Kind: EventCommandResult, Timestamp: e.now(), RunID: rs.runID, StepID: step.ID, Host: host.Name, Command: display, Duration: duration, Err: err})
 		return fmt.Errorf("run on %s: %w", host.Name, err)
 	}
 
 	exitCode := result.ExitCode
-	emitter.Emit(Event{Kind: EventCommandResult, Timestamp: e.now(), RunID: rs.runID, StepID: step.ID, Host: host.Name, Command: cmd, Duration: duration, ExitCode: &exitCode})
+	emitter.Emit(Event{Kind: EventCommandResult, Timestamp: e.now(), RunID: rs.runID, StepID: step.ID, Host: host.Name, Command: display, Duration: duration, ExitCode: &exitCode})
 
 	want := 0
 	if action.Kind == runbook.ActionKindCheck {
