@@ -34,10 +34,11 @@ OpsRun treats a runbook as executable, auditable code:
 
 ## Status
 
-OpsRun is under active development, built in phases. The current phase and detailed
-progress are tracked in the repository's project board and `CHANGELOG.md`. The design
-described in this README reflects the target v1 behavior; see `CHANGELOG.md` for what is
-implemented in the current version.
+OpsRun has reached v0.1.0: every feature described in this README — the parser and
+validator, the concurrent SSH worker pool, the DAG execution engine with rollback and
+checkpointing, the CLI, the Bubble Tea TUI, and the hash-chained audit log — is
+implemented and covered by tests. See `CHANGELOG.md` for the detailed, phase-by-phase
+history.
 
 ## Installation
 
@@ -269,15 +270,17 @@ conventions, and commit message format.
 
 ## Roadmap
 
-- Phase 1: core architecture, domain interfaces, configuration, project tooling.
-- Phase 2: Markdown AST runbook parser and validator.
-- Phase 3: concurrent SSH worker pool with pooling, retries, and streaming output.
-- Phase 4: DAG execution engine, rollback, approval gates, checkpoint/resume.
-- Phase 5: Cobra CLI, Bubble Tea TUI, hash-chained audit log.
-- Phase 6: v0.1.0 release with GoReleaser, SBOM, and multi-platform binaries.
+- [x] Phase 1: core architecture, domain interfaces, configuration, project tooling.
+- [x] Phase 2: Markdown AST runbook parser and validator.
+- [x] Phase 3: concurrent SSH worker pool with pooling, retries, and streaming output.
+- [x] Phase 4: DAG execution engine, rollback, approval gates, checkpoint/resume.
+- [x] Phase 5: Cobra CLI, Bubble Tea TUI, hash-chained audit log.
+- [x] Phase 6: v0.1.0 release with GoReleaser, SBOM, and multi-platform binaries.
 
 Beyond v1: two-person approval for critical steps, a Vault-backed `SecretProvider`,
-syslog/external `AuditSink` implementations, and SSH certificate authority integration.
+syslog/external `AuditSink` implementations, SSH certificate authority integration, and a
+text-input widget in the TUI's approval prompt so `edit variable` works there too (it
+currently only works in the plain-text fallback).
 
 ## License
 

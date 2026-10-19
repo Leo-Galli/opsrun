@@ -6,6 +6,12 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-19
+
+First tagged release. Every phase of the original build plan (architecture scaffolding,
+Markdown runbook parser, concurrent SSH worker pool, DAG execution engine with rollback,
+CLI/TUI/audit log) is implemented and tested.
+
 ### Added
 
 - **Project scaffolding**: standard Go layout, core domain and interface definitions
@@ -82,3 +88,14 @@ All notable changes to this project are documented in this file. The format foll
   real terminal apart from `/dev/null` (both are character devices), which made
   `opsrun run ... >/dev/null 2>&1` hang waiting for a terminal that was never there.
   Fixed with `golang.org/x/term.IsTerminal`.
+- The Docker build did not cross-compile for its target platform, so a multi-platform
+  `buildx` build would have baked an `amd64` binary into every image regardless of the
+  requested platform. Fixed by honoring `TARGETOS`/`TARGETARCH`.
+- CI's Lint workflow failed against the real GitHub Actions runners (while passing with
+  a locally installed `golangci-lint`): `golangci-lint-action@v6`'s `version: latest`
+  resolved to v1.64.8, which cannot analyze a module whose `go.mod` targets a newer Go
+  version than it was built with, and that action's v2 config schema requires
+  `golangci-lint-action@v7`. Fixed by pinning both.
+
+[0.1.0]: https://github.com/Leo-Galli/opsrun/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Leo-Galli/opsrun/compare/v0.1.0...HEAD
