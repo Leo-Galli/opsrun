@@ -28,5 +28,8 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          # Pinned rather than "latest": golangci-lint-action@v6's "latest" resolved to
+          # v1.64.8 (built with go1.24) in practice, which refuses to analyze a module
+          # whose go.mod targets a newer Go version (1.27) than it was built with.
+          version: v2.15.0
           args: --timeout=5m
