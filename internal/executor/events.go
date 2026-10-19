@@ -56,6 +56,17 @@ type NoopEmitter struct{}
 // Emit implements Emitter.
 func (NoopEmitter) Emit(Event) {}
 
+// MultiEmitter fans a single Event out to every Emitter in the slice, in order. Use it
+// to drive the TUI (or a Recorder) and the audit log from the same run.
+type MultiEmitter []Emitter
+
+// Emit implements Emitter.
+func (m MultiEmitter) Emit(e Event) {
+	for _, em := range m {
+		em.Emit(e)
+	}
+}
+
 // Recorder is an Emitter that stores every event it receives, in order. It is intended
 // for tests and for the TUI's internal event log, not for production audit storage. It
 // is safe for concurrent use: the executor emits command-result events from per-host
