@@ -1,0 +1,48 @@
+# Local-only project instructions; must never be committed or pushed.
+CLAUDE.md
+
+# Build artifacts
+/bin/
+/dist/
+
+# Go build/test artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Coverage
+coverage.out
+coverage.html
+*.cover
+
+# Dependency directories
+vendor/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local audit logs and runtime state
+/audit/
+*.audit.jsonl
+/.opsrun/
+
+# Go workspace files (local only)
+go.work
+go.work.sum
