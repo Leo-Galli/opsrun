@@ -16,6 +16,8 @@ import (
 
 // runCLI executes args against a fresh root command and returns combined stdout,
 // combined stderr, and the error (if any) from Execute.
+//
+//nolint:unparam // stderr is part of this helper's general-purpose API for future tests, even though no current test needs it
 func runCLI(t *testing.T, args ...string) (stdout, stderr string, err error) {
 	t.Helper()
 	root := newRootCmd()

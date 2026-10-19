@@ -16,7 +16,7 @@ func loadAuditSigner(path string) (ed25519.PrivateKey, error) {
 	if path == "" {
 		return nil, nil
 	}
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is an operator-supplied --signing-key-path/--public-key flag, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("read audit signing key %q: %w", path, err)
 	}
@@ -32,7 +32,7 @@ func loadAuditPublicKey(path string) (ed25519.PublicKey, error) {
 	if path == "" {
 		return nil, nil
 	}
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is an operator-supplied --signing-key-path/--public-key flag, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("read audit public key %q: %w", path, err)
 	}

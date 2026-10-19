@@ -72,8 +72,8 @@ func (s *sshSession) Run(ctx context.Context, command string, opts RunOptions) (
 		return s.finish(start, stdoutCap, stderrCap, waitErr)
 	case <-runCtx.Done():
 		_ = s.session.Signal(xssh.SIGKILL) // best effort; many servers ignore signal requests
-		s.session.Close()
-		<-done
+		_ = s.session.Close()
+		<-done //nolint:errcheck // draining Wait(); its error is moot once we have already decided to report a timeout/cancellation
 		class := ErrorClassTimeout
 		if ctx.Err() != nil {
 			class = ErrorClassCanceled

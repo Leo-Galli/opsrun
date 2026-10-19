@@ -201,7 +201,7 @@ func walkSteps(doc ast.Node, source []byte, pos positionFunc) ([]*runbook.Step, 
 			if node.Level != 2 {
 				continue
 			}
-			headingText := string(node.Text(source))
+			headingText := string(node.Text(source)) //nolint:staticcheck // Text() is deprecated but functional (verified against goldmark v1.8.6 source); it is the simplest way to get a heading's plain inline text
 			m := stepHeadingPattern.FindStringSubmatch(strings.TrimSpace(headingText))
 			if m == nil {
 				continue
@@ -214,7 +214,7 @@ func walkSteps(doc ast.Node, source []byte, pos positionFunc) ([]*runbook.Step, 
 			if cur == nil {
 				continue
 			}
-			raw := string(node.Text(source))
+			raw := string(node.Text(source)) //nolint:staticcheck // Paragraph.Text() is deprecated but returns Lines().Value(source), exactly the raw source text this directive/prose detection needs
 			if directivesPending {
 				directivesPending = false
 				if applied, err := applyDirectivesIfPresent(cur, raw, blockPos(node)); err != nil {

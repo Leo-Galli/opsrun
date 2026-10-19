@@ -33,7 +33,7 @@ func testTransport(t testing.TB, ts *testServer, cfgOverride func(*PoolConfig)) 
 	}
 	tr, err := NewSSHTransport(cfg)
 	require.NoError(t, err)
-	t.Cleanup(func() { tr.Close() })
+	t.Cleanup(func() { tr.Close() }) //nolint:errcheck
 	return tr
 }
 
@@ -53,7 +53,7 @@ func TestSSHTransportRunSuccess(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(context.Background(), "echo:hello", RunOptions{})
 	require.NoError(t, err)
@@ -68,7 +68,7 @@ func TestSSHTransportNonZeroExit(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(context.Background(), "exit:7", RunOptions{})
 	require.NoError(t, err, "non-zero exit must not be reported as a transport error")
@@ -82,7 +82,7 @@ func TestSSHTransportStderr(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(context.Background(), "stderr:oops", RunOptions{})
 	require.NoError(t, err)
@@ -97,7 +97,7 @@ func TestSSHTransportStreaming(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	var out bytes.Buffer
 	_, err = sess.Run(context.Background(), "echo:streamed", RunOptions{Stdout: &out})
@@ -112,7 +112,7 @@ func TestSSHTransportCommandTimeout(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	_, err = sess.Run(context.Background(), "sleep:5s", RunOptions{CommandTimeout: 100 * time.Millisecond})
 	require.Error(t, err)
@@ -129,7 +129,7 @@ func TestSSHTransportContextCancel(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
@@ -150,7 +150,7 @@ func TestSSHTransportDisconnect(t *testing.T) {
 
 	sess, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	_, err = sess.Run(context.Background(), "disconnect:", RunOptions{})
 	require.Error(t, err)
@@ -258,7 +258,7 @@ func TestSSHTransportConcurrentHosts(t *testing.T) {
 	}
 	tr, err := NewSSHTransport(cfg)
 	require.NoError(t, err)
-	defer tr.Close()
+	defer tr.Close() //nolint:errcheck
 
 	results := make(chan error, numHosts)
 	for _, h := range hosts {
@@ -268,7 +268,7 @@ func TestSSHTransportConcurrentHosts(t *testing.T) {
 				results <- err
 				return
 			}
-			defer sess.Close()
+			defer sess.Close() //nolint:errcheck
 			res, err := sess.Run(context.Background(), "echo:ok", RunOptions{})
 			if err != nil {
 				results <- err
@@ -308,7 +308,7 @@ func TestSSHTransportConcurrentOpenSameHostDialsOnce(t *testing.T) {
 				results <- err
 				return
 			}
-			defer sess.Close()
+			defer sess.Close() //nolint:errcheck
 			_, err = sess.Run(ctx, "echo:ok", RunOptions{})
 			results <- err
 		}()

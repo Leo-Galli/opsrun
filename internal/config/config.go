@@ -97,7 +97,7 @@ func Default() *Config {
 // and validates the result.
 func Load(path string) (*Config, error) {
 	cfg := Default()
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is an operator-supplied --config flag, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("read config %q: %w", path, err)
 	}

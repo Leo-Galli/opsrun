@@ -69,7 +69,12 @@ func (c *PoolConfig) setDefaults() {
 }
 
 // SSHTransport implements Transport over real SSH connections, pooling one connection
-// per host and multiplexing sessions over it, within the configured limits.
+// per host and multiplexing sessions over it, within the configured limits. The name
+// "stutters" as ssh.SSHTransport, but the unqualified name Transport is already taken by
+// this package's interface; LocalTransport and FakeTransport follow the same naming
+// convention for the other two implementations.
+//
+//nolint:revive // see above
 type SSHTransport struct {
 	cfg       PoolConfig
 	globalSem semaphore
@@ -280,12 +285,12 @@ func (t *SSHTransport) dial(ctx context.Context, host inventory.Host) (*xssh.Cli
 
 	conn, err := jumpClient.Dial("tcp", addr)
 	if err != nil {
-		jumpClient.Close()
+		jumpClient.Close() //nolint:errcheck
 		return nil, &TransportError{Class: ErrorClassConnection, Host: host.Name, Err: fmt.Errorf("dial via jump host %s: %w", host.ProxyJump, err)}
 	}
 	ncc, chans, reqs, err := xssh.NewClientConn(conn, addr, config)
 	if err != nil {
-		jumpClient.Close()
+		jumpClient.Close() //nolint:errcheck
 		return nil, classifyDialError(host.Name, err)
 	}
 	return xssh.NewClient(ncc, chans, reqs), nil

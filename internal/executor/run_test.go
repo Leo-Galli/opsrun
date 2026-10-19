@@ -44,6 +44,7 @@ func (g *fakeApprovalGate) RequestApproval(_ context.Context, req approval.Reque
 	return g.responses[idx], nil
 }
 
+//nolint:unparam // target is part of this helper's general-purpose API; every current test uses runbook-level target fallback instead
 func runAction(target, command string) *runbook.Action {
 	return &runbook.Action{Kind: runbook.ActionKindRun, Target: target, Command: command}
 }

@@ -59,7 +59,7 @@ func (s *localSession) Run(ctx context.Context, command string, opts RunOptions)
 		defer cancel()
 	}
 
-	cmd := exec.Command("sh", "-c", command)
+	cmd := exec.Command("sh", "-c", command) //nolint:gosec // executing the (parsed, validated, operator-reviewed) runbook command is this package's entire purpose
 	setProcessGroup(cmd)
 
 	limit := opts.MaxOutputBytes
@@ -85,7 +85,7 @@ func (s *localSession) Run(ctx context.Context, command string, opts RunOptions)
 	case err = <-done:
 	case <-runCtx.Done():
 		killProcessGroup(cmd)
-		<-done
+		<-done //nolint:errcheck // draining cmd.Wait(); its error is moot once we have already decided to report a timeout
 		result := &Result{
 			Duration:  time.Since(start),
 			Stdout:    stdoutCapture.String(),

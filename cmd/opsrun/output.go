@@ -64,10 +64,10 @@ func printFindings(w io.Writer, findings []parser.ValidationError, output string
 
 type summaryJSON struct {
 	RunID       string                       `json:"run_id"`
-	Failed      bool                         `json:"failed"`
 	FailedStep  string                       `json:"failed_step,omitempty"`
-	RollbackRan bool                         `json:"rollback_ran"`
 	StepStates  map[string]map[string]string `json:"step_states"`
+	Failed      bool                         `json:"failed"`
+	RollbackRan bool                         `json:"rollback_ran"`
 }
 
 func printSummary(w io.Writer, summary *executor.Summary, output string) {

@@ -192,7 +192,7 @@ func (e *DefaultExecutor) runAction(ctx context.Context, rs *runState, emitter E
 	if err != nil {
 		return fmt.Errorf("open session on %s: %w", host.Name, err)
 	}
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	start := e.now()
 	result, err := sess.Run(ctx, cmd, ssh.RunOptions{CommandTimeout: action.Timeout})

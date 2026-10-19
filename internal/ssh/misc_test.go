@@ -46,7 +46,7 @@ func TestSSHTransportKeepaliveAndIdleExpiry(t *testing.T) {
 
 	sess2, err := tr.Open(context.Background(), host)
 	require.NoError(t, err)
-	defer sess2.Close()
+	defer sess2.Close() //nolint:errcheck
 	_, err = sess2.Run(context.Background(), "echo:y", RunOptions{})
 	require.NoError(t, err)
 

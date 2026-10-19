@@ -162,7 +162,7 @@ func newAuditKeygenCmd() *cobra.Command {
 			if err := os.WriteFile(outPriv, priv, 0o600); err != nil {
 				return withExitCode(ExitGenericError, fmt.Errorf("write private key: %w", err))
 			}
-			if err := os.WriteFile(outPub, pub, 0o644); err != nil {
+			if err := os.WriteFile(outPub, pub, 0o644); err != nil { //nolint:gosec // a public key is meant to be world-readable
 				return withExitCode(ExitGenericError, fmt.Errorf("write public key: %w", err))
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "[OK] wrote %s (private, keep secret) and %s (public)\n", outPriv, outPub)

@@ -70,8 +70,8 @@ type planStep struct {
 	Command   string   `json:"command,omitempty"`
 	Checks    []string `json:"checks,omitempty"`
 	Rollback  string   `json:"rollback,omitempty"`
-	Confirm   bool     `json:"confirm"`
 	DependsOn []string `json:"depends_on,omitempty"`
+	Confirm   bool     `json:"confirm"`
 }
 
 type planLevel struct {

@@ -134,7 +134,7 @@ func doRun(cmd *cobra.Command, flags *globalFlags, runbookPath, runID, checkpoin
 		return withExitCode(ExitGenericError, err)
 	}
 	if auditSink != nil {
-		defer auditSink.Close()
+		defer auditSink.Close() //nolint:errcheck
 	}
 	exec.Approval = gate
 

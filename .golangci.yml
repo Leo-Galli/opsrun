@@ -1,31 +1,58 @@
+version: "2"
+
 run:
   timeout: 5m
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck
     - govet
     - ineffassign
     - staticcheck
     - unused
-    - gosimple
     - bodyclose
     - gosec
     - misspell
     - revive
     - unconvert
     - unparam
-
-linters-settings:
-  govet:
-    enable-all: true
-  revive:
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        # fieldalignment is a micro-optimization (struct field byte-packing) with no
+        # correctness impact; applying it project-wide would churn nearly every
+        # multi-field struct for negligible memory savings.
+        - fieldalignment
+        # shadow is notoriously noisy for the extremely common and idiomatic
+        # `if err := f(); err != nil` pattern; not part of go vet's default set either.
+        - shadow
+    revive:
+      rules:
+        - name: exported
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (io.Closer).Close
+        - (net.Conn).Close
+        - (*os.File).Close
+    gosec:
+      # G104 duplicates errcheck, which is already enabled as its own linter.
+      excludes:
+        - G104
+  exclusions:
+    paths:
+      - testdata
     rules:
-      - name: exported
+      # Test code is not a security boundary: file paths and subprocess arguments in
+      # tests come from t.TempDir() and hardcoded fixtures, not untrusted input.
+      - path: _test\.go
+        linters:
+          - gosec
 
-issues:
-  exclude-dirs:
-    - testdata
-  max-issues-per-linter: 0
-  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt

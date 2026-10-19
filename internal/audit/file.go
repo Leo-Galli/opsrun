@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/user"
 	"sync"
@@ -31,7 +32,7 @@ type FileSink struct {
 // to any existing content and resuming the hash chain from its last record. signer may
 // be nil to disable signing.
 func NewFileSink(path string, signer ed25519.PrivateKey) (*FileSink, error) {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600) //nolint:gosec // path is an operator-configured audit log location, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("open audit log %q: %w", path, err)
 	}
@@ -41,7 +42,7 @@ func NewFileSink(path string, signer ed25519.PrivateKey) (*FileSink, error) {
 		f.Close()
 		return nil, fmt.Errorf("read existing audit log %q: %w", path, err)
 	}
-	if _, err := f.Seek(0, os.SEEK_END); err != nil {
+	if _, err := f.Seek(0, io.SeekEnd); err != nil {
 		f.Close()
 		return nil, fmt.Errorf("seek audit log %q: %w", path, err)
 	}
@@ -65,7 +66,7 @@ func currentUser() string {
 // lastRecord scans f from the start and returns the hash and sequence number of its
 // last record, or (genesisHash, 0) if f is empty.
 func lastRecord(f *os.File) (string, int64, error) {
-	if _, err := f.Seek(0, os.SEEK_SET); err != nil {
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
 		return "", 0, err
 	}
 	scanner := bufio.NewScanner(f)

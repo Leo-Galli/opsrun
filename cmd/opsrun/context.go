@@ -34,7 +34,7 @@ func loadConfig(path string) (*config.Config, error) {
 
 // parseRunbookFile parses the runbook at path.
 func parseRunbookFile(path string) (*runbook.Runbook, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // path is the operator-supplied runbook file argument, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("open runbook %q: %w", path, err)
 	}
@@ -51,7 +51,7 @@ func parseRunbookFile(path string) (*runbook.Runbook, error) {
 func resolveVars(varsFile string, varFlags []string) (map[string]any, error) {
 	vars := map[string]any{}
 	if varsFile != "" {
-		data, err := os.ReadFile(varsFile)
+		data, err := os.ReadFile(varsFile) //nolint:gosec // varsFile is the operator-supplied --vars-file flag, not untrusted input
 		if err != nil {
 			return nil, fmt.Errorf("read vars file %q: %w", varsFile, err)
 		}
@@ -148,7 +148,7 @@ func buildExecutor(cfg *config.Config, insecureSkipHostKeyVerification bool, out
 
 	var auditSink audit.Sink
 	if cfg.Audit.LogPath != "" {
-		if err := os.MkdirAll(filepath.Dir(cfg.Audit.LogPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(cfg.Audit.LogPath), 0o750); err != nil {
 			return nil, nil, fmt.Errorf("create audit log directory: %w", err)
 		}
 		signer, err := loadAuditSigner(cfg.Audit.SigningKeyPath)

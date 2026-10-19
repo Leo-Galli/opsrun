@@ -57,7 +57,7 @@ func newTestServer(t testing.TB) *testServer {
 	}
 	ts := &testServer{listener: ln, hostKey: signer}
 	go ts.serve()
-	t.Cleanup(func() { ln.Close() })
+	t.Cleanup(func() { ln.Close() }) //nolint:errcheck
 	return ts
 }
 
@@ -94,12 +94,12 @@ func (ts *testServer) handleConn(conn net.Conn) {
 	ts.mu.Lock()
 	ts.connections++
 	ts.mu.Unlock()
-	defer sconn.Close()
+	defer sconn.Close() //nolint:errcheck
 	go xssh.DiscardRequests(reqs)
 
 	for newChannel := range chans {
 		if newChannel.ChannelType() != "session" {
-			newChannel.Reject(xssh.UnknownChannelType, "unsupported channel type")
+			newChannel.Reject(xssh.UnknownChannelType, "unsupported channel type") //nolint:errcheck
 			continue
 		}
 		channel, requests, err := newChannel.Accept()
@@ -114,23 +114,23 @@ func (ts *testServer) handleConn(conn net.Conn) {
 }
 
 func (ts *testServer) handleSession(channel xssh.Channel, requests <-chan *xssh.Request) {
-	defer channel.Close()
+	defer channel.Close() //nolint:errcheck
 	for req := range requests {
 		switch req.Type {
 		case "exec":
 			var payload struct{ Command string }
 			if err := xssh.Unmarshal(req.Payload, &payload); err != nil {
-				req.Reply(false, nil)
+				req.Reply(false, nil) //nolint:errcheck
 				continue
 			}
-			req.Reply(true, nil)
+			req.Reply(true, nil) //nolint:errcheck
 			ts.runScenario(channel, payload.Command)
 			return
 		case "pty-req", "env":
-			req.Reply(true, nil)
+			req.Reply(true, nil) //nolint:errcheck
 		default:
 			if req.WantReply {
-				req.Reply(false, nil)
+				req.Reply(false, nil) //nolint:errcheck
 			}
 		}
 	}

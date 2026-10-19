@@ -24,7 +24,7 @@ func BenchmarkSSHTransportSequentialSessions(b *testing.B) {
 		if _, err := sess.Run(ctx, "echo:bench", RunOptions{}); err != nil {
 			b.Fatal(err)
 		}
-		sess.Close()
+		sess.Close() //nolint:errcheck
 	}
 }
 
@@ -47,7 +47,7 @@ func BenchmarkSSHTransportConcurrentSessions(b *testing.B) {
 			if _, err := sess.Run(ctx, "echo:bench", RunOptions{}); err != nil {
 				b.Fatal(err)
 			}
-			sess.Close()
+			sess.Close() //nolint:errcheck
 		}
 	})
 }

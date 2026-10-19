@@ -23,7 +23,7 @@ type VerifyResult struct {
 // (if publicKey is non-nil) invalid or missing signatures. It reads the whole file even
 // after finding a violation, so a single call reports every problem, not just the first.
 func VerifyFile(path string, publicKey ed25519.PublicKey) (*VerifyResult, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // path is an operator-configured audit log location, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("open audit log %q: %w", path, err)
 	}
@@ -78,7 +78,7 @@ func VerifyFile(path string, publicKey ed25519.PublicKey) (*VerifyResult, error)
 // ReadAll reads every record from the audit log at path, in order. It does not verify
 // the hash chain; use VerifyFile for that.
 func ReadAll(path string) ([]Record, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // path is an operator-configured audit log location, not untrusted input
 	if err != nil {
 		return nil, fmt.Errorf("open audit log %q: %w", path, err)
 	}

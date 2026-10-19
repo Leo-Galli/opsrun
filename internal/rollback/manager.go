@@ -44,7 +44,7 @@ func (m *DefaultManager) rollbackOne(ctx context.Context, c CompletedStep) Outco
 	if err != nil {
 		return Outcome{CompletedStep: c, Err: fmt.Errorf("open session for rollback: %w", err)}
 	}
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(rctx, c.ResolvedRollbackCommand, ssh.RunOptions{CommandTimeout: m.Timeout})
 	if err != nil {

@@ -17,7 +17,7 @@ func TestLocalTransportRunSuccess(t *testing.T) {
 	tr := NewLocalTransport()
 	sess, err := tr.Open(context.Background(), inventory.Host{Name: "local"})
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	var out bytes.Buffer
 	result, err := sess.Run(context.Background(), "echo hello", RunOptions{Stdout: &out})
@@ -31,7 +31,7 @@ func TestLocalTransportNonZeroExit(t *testing.T) {
 	tr := NewLocalTransport()
 	sess, err := tr.Open(context.Background(), inventory.Host{Name: "local"})
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(context.Background(), "exit 3", RunOptions{})
 	require.NoError(t, err)
@@ -42,7 +42,7 @@ func TestLocalTransportStderr(t *testing.T) {
 	tr := NewLocalTransport()
 	sess, err := tr.Open(context.Background(), inventory.Host{Name: "local"})
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(context.Background(), "echo oops 1>&2", RunOptions{})
 	require.NoError(t, err)
@@ -53,7 +53,7 @@ func TestLocalTransportTimeout(t *testing.T) {
 	tr := NewLocalTransport()
 	sess, err := tr.Open(context.Background(), inventory.Host{Name: "local"})
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	_, err = sess.Run(context.Background(), "sleep 5", RunOptions{CommandTimeout: 100 * time.Millisecond})
 	require.Error(t, err)
@@ -76,7 +76,7 @@ func TestLocalTransportOutputTruncation(t *testing.T) {
 	tr := NewLocalTransport()
 	sess, err := tr.Open(context.Background(), inventory.Host{Name: "local"})
 	require.NoError(t, err)
-	defer sess.Close()
+	defer sess.Close() //nolint:errcheck
 
 	result, err := sess.Run(context.Background(), "printf 'abcdefghij'", RunOptions{MaxOutputBytes: 4})
 	require.NoError(t, err)

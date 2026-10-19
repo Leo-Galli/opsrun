@@ -38,7 +38,7 @@ func checkpointPath(dir, runID string) string {
 // SaveCheckpoint writes cp to dir, atomically (write-then-rename) so a crash mid-write
 // never leaves a corrupt checkpoint behind.
 func SaveCheckpoint(dir string, cp *Checkpoint) error {
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return fmt.Errorf("create checkpoint dir: %w", err)
 	}
 	data, err := json.MarshalIndent(cp, "", "  ")

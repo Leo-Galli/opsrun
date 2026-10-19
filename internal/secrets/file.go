@@ -18,7 +18,7 @@ type FileProvider struct {
 
 // Get implements Provider.
 func (p *FileProvider) Get(_ context.Context, key string) (string, error) {
-	data, err := os.ReadFile(filepath.Join(p.Dir, key))
+	data, err := os.ReadFile(filepath.Join(p.Dir, key)) //nolint:gosec // p.Dir is an operator-configured secrets directory, key is a known secret name, not untrusted input
 	if err != nil {
 		if os.IsNotExist(err) {
 			return "", &ErrNotFound{Key: key}

@@ -66,7 +66,7 @@ func agentAuthMethod() (xssh.AuthMethod, error) {
 	if sock == "" {
 		return nil, errors.New("SSH_AUTH_SOCK is not set")
 	}
-	conn, err := net.Dial("unix", sock)
+	conn, err := net.Dial("unix", sock) //nolint:gosec // a unix domain socket path from SSH_AUTH_SOCK, not a network address; not SSRF
 	if err != nil {
 		return nil, fmt.Errorf("dial ssh-agent: %w", err)
 	}

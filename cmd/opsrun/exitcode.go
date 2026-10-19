@@ -14,8 +14,8 @@ const (
 
 // exitCodeError pairs an error with the process exit code it should produce.
 type exitCodeError struct {
-	code int
 	err  error
+	code int
 }
 
 func withExitCode(code int, err error) error {

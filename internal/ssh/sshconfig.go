@@ -35,7 +35,7 @@ type Config struct {
 // LoadSSHConfig reads and parses the SSH client config file at path. A missing file is
 // not an error: it is treated as an empty configuration.
 func LoadSSHConfig(path string) (*Config, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // path is an operator-configured ~/.ssh/config location, not untrusted input
 	if err != nil {
 		if os.IsNotExist(err) {
 			return &Config{}, nil
