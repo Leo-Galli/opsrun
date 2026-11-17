@@ -17,7 +17,9 @@ Thank you for considering a contribution to OpsRun.
    ```
 
 4. Open a pull request against `main` using the provided template. Keep pull requests
-   small and focused on one logical change.
+   small and focused on one logical change. See
+   [`docs/pull-request-guidelines.md`](docs/pull-request-guidelines.md) for size,
+   review, and security-sensitive PR expectations.
 
 ## Commit messages
 
@@ -52,8 +54,9 @@ messages, code, comments, or pull request descriptions.
 
 ## Reporting bugs and requesting features
 
-Use the issue templates. For suspected security vulnerabilities, follow
-[`SECURITY.md`](SECURITY.md) instead of opening a public issue.
+Use the issue forms under `.github/ISSUE_TEMPLATE/`. Writing tips live in
+[`docs/issue-guidelines.md`](docs/issue-guidelines.md). For suspected security
+vulnerabilities, follow [`SECURITY.md`](SECURITY.md) instead of opening a public issue.
 
 ## Code of conduct
 

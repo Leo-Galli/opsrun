@@ -1,0 +1,50 @@
+name: Feature request
+description: Propose a change that fits OpsRun safety principles
+title: "[feat]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        OpsRun executes commands on remote hosts during incident response. Feature proposals must respect validation, approval, rollback, and audit guarantees.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem does this solve? What is the current limitation?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the change. Prefer reversible, auditable, fail-closed behavior.
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints check
+      description: Confirm the request does not weaken project safety rules.
+      options:
+        - label: Does not bypass runbook validation, dangerous-command checks, or approval gates
+          required: true
+        - label: Does not silently skip rollback, checkpointing, or audit logging
+          required: true
+        - label: Does not disable SSH host-key verification by default
+          required: true
+        - label: Does not log or persist secrets in plaintext
+          required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: textarea
+    id: security
+    attributes:
+      label: Security and safety impact
+      description: Impact on command execution safety, approvals, rollback, or the audit log.
+    validations:
+      required: true

@@ -1,0 +1,31 @@
+name: Documentation
+description: Report missing, unclear, or incorrect documentation
+title: "[docs]: "
+labels: ["documentation"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Documentation area
+      options:
+        - README
+        - docs/runbook-spec.md
+        - docs/architecture.md
+        - CONTRIBUTING / PR guidelines
+        - SECURITY.md
+        - Examples / runbooks
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is wrong or missing?
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+    validations:
+      required: false
