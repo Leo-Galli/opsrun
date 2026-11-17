@@ -1,0 +1,79 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="Architecture"
+  description="How OpsRun parses runbooks, builds a DAG, executes over SSH, and records a hash-chained audit trail."
+  path="/docs/architecture"
+>
+  <p>
+    OpsRun turns a Markdown runbook into a validated DAG of steps, then executes that
+    DAG through a pluggable transport with approval gates, automatic rollback, and an
+    immutable audit trail.
+  </p>
+
+  <h2 id="pipeline">Pipeline</h2>
+  <ol>
+    <li><strong>Parse</strong> — <code>internal/parser</code> walks the Markdown AST into a domain model.</li>
+    <li><strong>Validate</strong> — cycles, vars, denylist, rollback warnings.</li>
+    <li><strong>Build DAG</strong> — <code>internal/dag</code> from <code>depends_on</code>.</li>
+    <li><strong>Execute</strong> — <code>internal/executor</code> schedules ready steps.</li>
+    <li><strong>Transport</strong> — SSH or local session runs the interpolated command.</li>
+    <li><strong>Approve / rollback / audit</strong> — gates, compensating actions, JSONL sink.</li>
+  </ol>
+
+  <h2 id="packages">Main packages</h2>
+  <table>
+    <thead>
+      <tr><th>Package</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>cmd/opsrun</code></td><td>Cobra CLI and TUI wiring</td></tr>
+      <tr><td><code>internal/parser</code></td><td>AST walk + validator</td></tr>
+      <tr><td><code>internal/runbook</code></td><td>Domain model</td></tr>
+      <tr><td><code>internal/dag</code></td><td>Dependency graph</td></tr>
+      <tr><td><code>internal/executor</code></td><td>Run loop, strategies, checkpoints</td></tr>
+      <tr><td><code>internal/approval</code></td><td>Human gates</td></tr>
+      <tr><td><code>internal/rollback</code></td><td>Reverse compensating actions</td></tr>
+      <tr><td><code>internal/ssh</code></td><td>Transport / Session (SSH + local)</td></tr>
+      <tr><td><code>internal/inventory</code></td><td>Hosts and groups</td></tr>
+      <tr><td><code>internal/secrets</code></td><td>SecretProvider</td></tr>
+      <tr><td><code>internal/audit</code></td><td>Hash-chained AuditSink</td></tr>
+      <tr><td><code>internal/tui</code></td><td>Bubble Tea interface</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="execution">Execution flow</h2>
+  <p>
+    <code>opsrun run</code> parses and validates, builds the DAG, then enters the
+    executor. For each ready step and target host batch:
+  </p>
+  <ol>
+    <li>Resolve variables and secrets; shell-escape interpolations.</li>
+    <li>If approval is required, show command + hosts; wait for decision.</li>
+    <li>Open a transport session; run the action; evaluate checks.</li>
+    <li>Append audit records; update checkpoint state.</li>
+    <li>On failure, invoke rollback for completed destructive steps in reverse order.</li>
+  </ol>
+
+  <h2 id="strategies">Host strategies</h2>
+  <ul>
+    <li><code>all</code> — every target in the step's set</li>
+    <li><code>rolling</code> — fixed batch size; stop if failure percent exceeds the cap</li>
+    <li><code>canary</code> — small first batch, then the remainder</li>
+  </ul>
+
+  <h2 id="checkpoints">Checkpoints and resume</h2>
+  <p>
+    Progress is written under the checkpoint directory. <code>opsrun resume</code>
+    reloads state for a run id and continues from the last durable point after
+    interrupt or partial failure.
+  </p>
+
+  <h2 id="source">Full diagram</h2>
+  <p>
+    Mermaid component and sequence diagrams live in
+    <a href="https://github.com/Leo-Galli/opsrun/blob/main/docs/architecture.md" rel="noopener noreferrer" target="_blank">docs/architecture.md</a>.
+  </p>
+</DocsLayout>

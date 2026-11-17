@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+---
+
+<BaseLayout
+  title="Install"
+  description="Install OpsRun from a release binary, go install, or Docker."
+  path="/install"
+>
+  <p class="label">Setup</p>
+  <h1 class="mt-2 text-2xl font-semibold tracking-tight text-fg">Install</h1>
+  <p class="mt-3 max-w-[36rem] text-[15px] leading-6 text-fg-3">
+    Then validate a bundled runbook before you touch live hosts.
+  </p>
+
+  <p class="label mt-10">Binary</p>
+  <pre class="code mt-2"><code>curl -LO https://github.com/Leo-Galli/opsrun/releases/latest/download/opsrun_linux_amd64.tar.gz
+curl -LO https://github.com/Leo-Galli/opsrun/releases/latest/download/checksums.txt
+sha256sum --ignore-missing -c checksums.txt
+tar -xzf opsrun_linux_amd64.tar.gz
+sudo install -m 0755 opsrun /usr/local/bin/opsrun</code></pre>
+
+  <p class="label mt-8">go install</p>
+  <pre class="code mt-2"><code>go install github.com/Leo-Galli/opsrun/cmd/opsrun@latest</code></pre>
+
+  <p class="label mt-8">Docker</p>
+  <pre class="code mt-2"><code>docker run --rm -v "$PWD":/work -w /work \
+  -v "$HOME/.ssh":/root/.ssh:ro \
+  ghcr.io/leo-galli/opsrun:latest run runbook.md --dry-run</code></pre>
+
+  <p class="label mt-8">First commands</p>
+  <pre class="code mt-2"><code>opsrun version
+opsrun validate examples/runbooks/full-disk.md
+opsrun plan examples/runbooks/full-disk.md</code></pre>
+
+  <p class="mt-6 text-[13px]">
+    <a class="underline decoration-rule underline-offset-4" href="/docs/getting-started">Getting started</a>
+  </p>
+</BaseLayout>

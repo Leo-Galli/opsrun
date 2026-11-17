@@ -1,0 +1,113 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+
+const varExpr = '{{ .Vars.name }}'
+---
+
+<DocsLayout
+  title="Runbook format"
+  description="Markdown grammar for OpsRun: YAML front matter, step headings, directives, and opsrun action blocks."
+  path="/docs/runbook-format"
+>
+  <p>
+    A runbook is a Markdown file. The parser walks a goldmark AST. It does not scrape
+    structure with ad-hoc regex on raw text.
+  </p>
+
+  <h2 id="front-matter">Front matter</h2>
+  <p>Required block at the top of the file:</p>
+  <pre><code>---
+name: full-disk-remediation
+version: "1.0"
+service: web-frontend
+severity: high
+author: sre-team
+targets:
+  - group: web
+vars:
+  cache_dir:
+    type: string
+    default: "/var/cache/app"
+    required: false
+  api_token:
+    type: string
+    required: true
+    secret: true
+approval:
+  mode: per_step
+  timeout: 5m
+---</code></pre>
+  <ul>
+    <li><code>name</code> is required. Unknown fields are parse errors.</li>
+    <li><code>severity</code>: <code>low | medium | high | critical</code></li>
+    <li><code>targets</code>: list of <code>group</code> or <code>host</code> entries</li>
+    <li><code>vars.*.type</code>: <code>string | int | bool | duration</code></li>
+    <li><code>secret: true</code> redacts the value outside the live SSH command</li>
+    <li><code>approval.mode</code>: <code>none | per_step | all</code></li>
+  </ul>
+
+  <h2 id="steps">Steps</h2>
+  <pre><code>## Step: &lt;id&gt; - &lt;title&gt;</code></pre>
+  <p>
+    <code>&lt;id&gt;</code> matches <code>[A-Za-z0-9_-]+</code> and must be unique.
+    Optional directives may follow as a YAML mapping paragraph:
+  </p>
+  <table>
+    <thead>
+      <tr><th>Key</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>depends_on</code></td><td>Step ids that must succeed first</td></tr>
+      <tr><td><code>confirm</code></td><td>Require human approval</td></tr>
+      <tr><td><code>retries</code></td><td>Retry count for the run action</td></tr>
+      <tr><td><code>continue_on_error</code></td><td>Keep going if this step fails</td></tr>
+      <tr><td><code>mode</code></td><td><code>serial</code> or <code>parallel</code> across hosts</td></tr>
+      <tr><td><code>read_only</code></td><td>Diagnostic step, no side effects</td></tr>
+      <tr><td><code>approval_mode</code> / <code>approval_timeout</code></td><td>Per-step override</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="actions">Action blocks</h2>
+  <p>Fenced code blocks use an info string with an <code>opsrun:</code> marker:</p>
+  <pre><code>```bash opsrun:run target=web timeout=30s
+systemctl restart web-frontend
+```
+
+```bash opsrun:check expect_exit=0
+systemctl is-active web-frontend
+```
+
+```bash opsrun:rollback
+systemctl restart web-frontend
+```</code></pre>
+  <ul>
+    <li><code>opsrun:run</code> — main action (at most one per step)</li>
+    <li><code>opsrun:check</code> — post-condition after a successful run</li>
+    <li><code>opsrun:rollback</code> — compensating action if a later step fails</li>
+  </ul>
+  <p>
+    Fences without an <code>opsrun:</code> marker are documentation only and are not
+    executed.
+  </p>
+
+  <h2 id="variables">Variables</h2>
+  <p>
+    Reference declared vars with <code>{varExpr}</code>. Undeclared references fail
+    validation. Values are shell-escaped on interpolation. Secret vars appear as
+    <code>***REDACTED***</code> in approvals, TUI, events, and the audit log.
+  </p>
+
+  <h2 id="validation">Validation rules</h2>
+  <ul>
+    <li>Duplicate step ids</li>
+    <li>Missing dependency targets</li>
+    <li>Dependency cycles</li>
+    <li>Undeclared variable references</li>
+    <li>Dangerous command denylist (errors)</li>
+    <li>Destructive patterns without rollback (warnings)</li>
+  </ul>
+  <p>
+    Authoritative grammar:
+    <a href="https://github.com/Leo-Galli/opsrun/blob/main/docs/runbook-spec.md" rel="noopener noreferrer" target="_blank">docs/runbook-spec.md</a>.
+  </p>
+</DocsLayout>

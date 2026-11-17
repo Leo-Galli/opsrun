@@ -1,0 +1,57 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="Overview"
+  description="How OpsRun turns Markdown runbooks into validated, approvable, auditable SSH workflows."
+  path="/docs"
+>
+  <div class="note">
+    Start here if you are new:
+    <a href="/docs/getting-started">Getting started</a>
+    (install → validate → plan).
+  </div>
+
+  <p>
+    OpsRun is a Go CLI for incident response. Procedures live as Markdown in git. OpsRun
+    parses them into a dependency DAG, runs steps over SSH against
+    <code>opsrun.yaml</code>, enforces approvals, rolls back on failure, and appends a
+    hash-chained audit log.
+  </p>
+
+  <h2 id="what-you-get">What you get</h2>
+  <ul>
+    <li>AST-based Markdown parsing</li>
+    <li>Concurrent steps with explicit dependencies</li>
+    <li>Rolling and canary host strategies</li>
+    <li>Approval gates that show command and hosts</li>
+    <li>Automatic rollback for completed destructive steps</li>
+    <li>Checkpoint and resume</li>
+    <li>Secret redaction and mandatory host-key verification by default</li>
+  </ul>
+
+  <h2 id="path">Reading path</h2>
+  <ol>
+    <li><a href="/docs/getting-started">Getting started</a></li>
+    <li><a href="/docs/runbook-format">Runbook format</a></li>
+    <li><a href="/docs/configuration">Configuration</a></li>
+    <li><a href="/docs/cli">CLI reference</a></li>
+    <li><a href="/docs/security">Security</a></li>
+    <li><a href="/docs/architecture">Architecture</a></li>
+    <li><a href="/docs/examples">Examples</a></li>
+  </ol>
+
+  <h2 id="source">Repository docs</h2>
+  <ul>
+    <li>
+      <a href="https://github.com/Leo-Galli/opsrun/blob/main/docs/runbook-spec.md" rel="noopener noreferrer" target="_blank">docs/runbook-spec.md</a>
+    </li>
+    <li>
+      <a href="https://github.com/Leo-Galli/opsrun/blob/main/docs/architecture.md" rel="noopener noreferrer" target="_blank">docs/architecture.md</a>
+    </li>
+    <li>
+      <a href="https://github.com/Leo-Galli/opsrun/blob/main/SECURITY.md" rel="noopener noreferrer" target="_blank">SECURITY.md</a>
+    </li>
+  </ul>
+</DocsLayout>

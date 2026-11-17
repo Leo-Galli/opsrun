@@ -1,0 +1,110 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { runbooks } from '../data/runbooks'
+
+const sample = `---
+name: full-disk-remediation
+severity: high
+targets:
+  - group: web
+approval:
+  mode: per_step
+---
+
+## Step: clear-cache - Clear cache
+depends_on: [check-disk]
+confirm: true
+
+\`\`\`bash opsrun:run target=web timeout=30s
+rm -rf {{ .Vars.cache_dir }}/*
+\`\`\`
+
+\`\`\`bash opsrun:rollback
+echo "cache rebuilt on next request"
+\`\`\``
+
+const teaser = runbooks.filter((r) =>
+  ['full-disk.md', 'db-failover.md', 'rolling-deploy.md'].includes(r.file),
+)
+---
+
+<BaseLayout
+  title="OpsRun"
+  description="Execute Markdown incident runbooks over SSH with approvals, rollback, and a hash-chained audit log."
+  path="/"
+>
+  <p class="label">What it is</p>
+  <h1 class="mt-2 max-w-[34rem] text-[1.85rem] font-semibold tracking-tight text-fg sm:text-[2.1rem] sm:leading-tight">
+    Run Markdown incident runbooks over SSH
+  </h1>
+  <p class="mt-4 max-w-[36rem] text-[16px] leading-7 text-fg-3">
+    OpsRun is a Go CLI. You write a procedure as Markdown, point it at hosts in
+    <code class="font-mono text-[13px] text-fg">opsrun.yaml</code>, and execute with
+    approvals, rollback, and an audit log.
+  </p>
+
+  <div class="mt-6 flex flex-wrap items-center gap-4 text-[14px]">
+    <a href="/docs/getting-started" class="rounded-md bg-fg px-3.5 py-2 font-medium text-sheet hover:bg-fg/90">
+      Get started
+    </a>
+    <a href="/docs" class="text-fg-2 underline decoration-rule underline-offset-4 hover:decoration-fg-3">
+      Read docs
+    </a>
+    <a href="/install" class="text-fg-2 underline decoration-rule underline-offset-4 hover:decoration-fg-3">
+      Install
+    </a>
+  </div>
+
+  <div class="mt-12 grid gap-6 border-t border-rule pt-10 sm:grid-cols-3">
+    <div>
+      <p class="label">1 · Before SSH</p>
+      <p class="mt-2 text-[14px] leading-6 text-fg-2">
+        <code class="font-mono text-[12px]">validate</code> and
+        <code class="font-mono text-[12px]">plan</code> catch cycles, missing vars, and
+        dangerous commands locally.
+      </p>
+    </div>
+    <div>
+      <p class="label">2 · During the run</p>
+      <p class="mt-2 text-[14px] leading-6 text-fg-2">
+        Approvals show the exact command and hosts. Destructive steps declare rollback.
+      </p>
+    </div>
+    <div>
+      <p class="label">3 · After</p>
+      <p class="mt-2 text-[14px] leading-6 text-fg-2">
+        Hash-chained audit records for the post-mortem. Secrets stay redacted.
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-12 border-t border-rule pt-10">
+    <p class="label">Example runbook</p>
+    <p class="mt-2 max-w-[36rem] text-[14px] leading-6 text-fg-3">
+      Same file in git review and in production. Full grammar in the docs.
+    </p>
+    <pre class="code mt-4"><code>{sample}</code></pre>
+    <p class="mt-3 text-[13px]">
+      <a href="/docs/runbook-format" class="underline decoration-rule underline-offset-4">Runbook format</a>
+    </p>
+  </div>
+
+  <div class="mt-12 border-t border-rule pt-10">
+    <p class="label">Bundled playbooks</p>
+    <ul class="mt-4 divide-y divide-rule border-y border-rule">
+      {
+        teaser.map((rb) => (
+          <li class="py-3">
+            <p class="font-mono text-[13px] text-fg">{rb.file}</p>
+            <p class="mt-1 text-[14px] leading-6 text-fg-3">{rb.summary}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="mt-4 text-[13px]">
+      <a href="/runbooks" class="underline decoration-rule underline-offset-4">All 9 runbooks</a>
+      <span class="mx-2 text-fg-3">·</span>
+      <a href="/docs/examples" class="underline decoration-rule underline-offset-4">Examples guide</a>
+    </p>
+  </div>
+</BaseLayout>

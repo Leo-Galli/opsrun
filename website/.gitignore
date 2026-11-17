@@ -1,0 +1,17 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# env / local
+.env
+.env.*
+!.env.example
+.vercel
+
+# logs / OS
+npm-debug.log*
+.DS_Store
+Thumbs.db

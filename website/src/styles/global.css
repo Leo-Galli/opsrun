@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #e9edf2;
+  --color-sheet: #f7f8fa;
+  --color-fg: #1c2430;
+  --color-fg-2: #3d4a5c;
+  --color-fg-3: #6b7789;
+  --color-rule: #d5dbe3;
+  --color-code: #eef1f5;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    @apply min-h-screen bg-bg text-fg-2 antialiased font-sans;
+  }
+
+  a {
+    @apply outline-none;
+  }
+
+  a:focus-visible {
+    @apply rounded-sm ring-2 ring-fg/30 ring-offset-2 ring-offset-bg;
+  }
+
+  ::selection {
+    background: rgb(28 36 48 / 0.16);
+  }
+
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto min-h-[70vh] max-w-5xl bg-sheet px-6 py-10 shadow-[0_0_0_1px_rgb(213_219_227)] sm:px-10 sm:py-12 lg:px-14;
+  }
+
+  .code {
+    @apply rounded-md border border-rule bg-code p-4 font-mono text-[13px] leading-6 text-fg;
+  }
+
+  .prose-docs {
+    @apply max-w-[42rem] text-[16px] leading-[1.7] text-fg-2;
+  }
+
+  .prose-docs h2 {
+    @apply mt-10 mb-3 scroll-mt-24 text-lg font-semibold text-fg;
+  }
+
+  .prose-docs h3 {
+    @apply mt-7 mb-2 scroll-mt-24 text-[15px] font-semibold text-fg;
+  }
+
+  .prose-docs p {
+    @apply mb-4;
+  }
+
+  .prose-docs ul,
+  .prose-docs ol {
+    @apply mb-4 space-y-2 pl-5;
+  }
+
+  .prose-docs ul {
+    @apply list-disc;
+  }
+
+  .prose-docs ol {
+    @apply list-decimal;
+  }
+
+  .prose-docs a {
+    @apply text-fg underline decoration-rule underline-offset-2 hover:decoration-fg-3;
+  }
+
+  .prose-docs code {
+    @apply font-mono text-[0.88em] text-fg;
+  }
+
+  .prose-docs pre {
+    @apply mb-5 rounded-md border border-rule bg-code p-4 font-mono text-[13px] leading-6 text-fg;
+  }
+
+  .prose-docs table {
+    @apply mb-5 w-full border-collapse text-left text-[14px];
+  }
+
+  .prose-docs th {
+    @apply border-b border-rule py-2 pr-3 font-semibold text-fg;
+  }
+
+  .prose-docs td {
+    @apply border-b border-rule py-2.5 pr-3 align-top;
+  }
+
+  .note {
+    @apply mb-5 rounded-md border border-rule bg-code/80 px-4 py-3 text-[14px] leading-6 text-fg-2;
+  }
+
+  .label {
+    @apply text-[11px] font-semibold tracking-[0.08em] text-fg-3 uppercase;
+  }
+}

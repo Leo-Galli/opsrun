@@ -1,0 +1,74 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="CLI reference"
+  description="OpsRun commands: validate, plan, run, resume, audit, hosts, and version."
+  path="/docs/cli"
+>
+  <p>
+    Entry point: <code>opsrun</code>. Global help: <code>opsrun --help</code>. Every
+    subcommand also accepts <code>--help</code>.
+  </p>
+
+  <h2 id="validate">opsrun validate</h2>
+  <pre><code>opsrun validate &lt;runbook.md&gt;</code></pre>
+  <p>
+    Parse the Markdown AST, build the domain model, run the validator. Prints findings
+    with step id and source position. Exit non-zero on errors.
+  </p>
+
+  <h2 id="plan">opsrun plan</h2>
+  <pre><code>opsrun plan &lt;runbook.md&gt; [--config PATH] [--var k=v] [--vars-file PATH]</code></pre>
+  <p>
+    Show execution order, dependencies, targets, and strategy. No remote execution.
+  </p>
+
+  <h2 id="run">opsrun run</h2>
+  <pre><code>opsrun run &lt;runbook.md&gt; \
+  --config opsrun.yaml \
+  [--interactive] \
+  [--dry-run] \
+  [--strategy all|rolling|canary] \
+  [--batch-size N] \
+  [--max-failure-percent N] \
+  [--var k=v] \
+  [--vars-file PATH] \
+  [--output text|json]</code></pre>
+  <ul>
+    <li><code>--interactive</code> — approval prompts / TUI on a real terminal</li>
+    <li><code>--dry-run</code> — preview without applying host changes</li>
+    <li><code>--strategy rolling|canary</code> — gradual host rollout</li>
+  </ul>
+
+  <h2 id="resume">opsrun resume</h2>
+  <pre><code>opsrun resume &lt;run-id&gt; --checkpoint-dir .opsrun/checkpoints</code></pre>
+  <p>
+    Continue an interrupted or partially failed run from the last checkpoint. The run
+    id is printed at the end of a run (and recorded in the audit log).
+  </p>
+
+  <h2 id="audit">opsrun audit</h2>
+  <pre><code>opsrun audit verify --log ./audit/opsrun-audit.jsonl
+opsrun audit export --log ./audit/opsrun-audit.jsonl --run-id &lt;run-id&gt;</code></pre>
+  <p>
+    <code>verify</code> checks the hash chain (and signatures when configured).
+    <code>export</code> renders a post-mortem timeline for one run.
+  </p>
+
+  <h2 id="hosts">opsrun hosts</h2>
+  <pre><code>opsrun hosts list --config opsrun.yaml</code></pre>
+  <p>Inspect inventory hosts and groups from the active config.</p>
+
+  <h2 id="version">opsrun version</h2>
+  <pre><code>opsrun version</code></pre>
+
+  <h2 id="config-precedence">Config precedence</h2>
+  <ol>
+    <li>Command-line flags</li>
+    <li>Environment variables (<code>OPSRUN_*</code>)</li>
+    <li>Config file (<code>--config</code> / <code>OPSRUN_CONFIG</code>)</li>
+  </ol>
+  <p>Details: <a href="/docs/configuration">Configuration</a>.</p>
+</DocsLayout>

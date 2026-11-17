@@ -1,0 +1,59 @@
+---
+import '../styles/global.css'
+import Nav from '../components/Nav.astro'
+import Footer from '../components/Footer.astro'
+
+type Props = {
+  title: string
+  description?: string
+  path?: string
+}
+
+const {
+  title,
+  description = 'OpsRun executes Markdown incident runbooks over SSH with approvals, rollback, and a hash-chained audit log.',
+  path = '/',
+} = Astro.props
+
+const canonical = new URL(path, Astro.site).toString()
+const pageTitle = title === 'OpsRun' ? 'OpsRun' : `${title} · OpsRun`
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#e9edf2" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:card" content="summary" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:bg-fg focus:px-3 focus:py-2 focus:text-sheet"
+    >
+      Skip to content
+    </a>
+    <div class="mx-auto max-w-5xl pt-0 sm:pt-6 sm:pb-10">
+      <Nav />
+      <main id="main" class="shell">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+  </body>
+</html>

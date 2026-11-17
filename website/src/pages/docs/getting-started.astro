@@ -1,0 +1,82 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="Getting started"
+  description="Install OpsRun, validate a bundled runbook, and run your first plan without touching production hosts."
+  path="/docs/getting-started"
+>
+  <div class="note">
+    Goal: install OpsRun, validate a bundled runbook, and produce a plan without opening
+    SSH to production.
+  </div>
+
+  <h2 id="install">1. Install</h2>
+  <p>Pick one path:</p>
+  <pre><code>go install github.com/Leo-Galli/opsrun/cmd/opsrun@latest
+opsrun version</code></pre>
+  <p>
+    Or download a release binary from
+    <a href="https://github.com/Leo-Galli/opsrun/releases" rel="noopener noreferrer" target="_blank">GitHub Releases</a>
+    and verify <code>checksums.txt</code>. Docker images publish to
+    <code>ghcr.io/leo-galli/opsrun</code>. See <a href="/install">Install</a> for full
+    commands.
+  </p>
+
+  <h2 id="clone-examples">2. Get the examples</h2>
+  <pre><code>git clone https://github.com/Leo-Galli/opsrun.git
+cd opsrun</code></pre>
+  <p>
+    Bundled playbooks live under <code>examples/runbooks/</code>. A sample inventory is
+    at the repo root as <code>opsrun.yaml</code>.
+  </p>
+
+  <h2 id="validate">3. Validate</h2>
+  <p>
+    Parsing and validation never open SSH sessions. They catch cycles, missing vars,
+    denylist hits, and missing rollbacks on destructive steps.
+  </p>
+  <pre><code>opsrun validate examples/runbooks/full-disk.md</code></pre>
+
+  <h2 id="plan">4. Plan</h2>
+  <p>
+    Plan shows step order, host targets, and strategy without executing.
+  </p>
+  <pre><code>opsrun plan examples/runbooks/full-disk.md
+opsrun plan examples/runbooks/rolling-deploy.md --var release_tag=v1.4.2</code></pre>
+
+  <h2 id="dry-run">5. Dry-run</h2>
+  <pre><code>opsrun run examples/runbooks/full-disk.md \
+  --config opsrun.yaml \
+  --dry-run</code></pre>
+  <p>
+    Dry-run still walks approvals in interactive mode if configured, but does not apply
+    changes on hosts.
+  </p>
+
+  <h2 id="real-run">6. Real run</h2>
+  <p>
+    Point <code>opsrun.yaml</code> at reachable hosts with working SSH keys and
+    <code>known_hosts</code> entries. Then:
+  </p>
+  <pre><code>opsrun run examples/runbooks/full-disk.md \
+  --config opsrun.yaml \
+  --interactive</code></pre>
+  <p>
+    On a TTY, the Bubble Tea TUI opens. Pipe output or pass <code>--output json</code>
+    for the plain path. Interrupted runs can resume from a checkpoint:
+  </p>
+  <pre><code>opsrun resume &lt;run-id&gt; --checkpoint-dir .opsrun/checkpoints</code></pre>
+
+  <h2 id="audit">7. Audit after</h2>
+  <pre><code>opsrun audit verify --log ./audit/opsrun-audit.jsonl
+opsrun audit export --log ./audit/opsrun-audit.jsonl --run-id &lt;run-id&gt;</code></pre>
+
+  <h2 id="next">Next</h2>
+  <ul>
+    <li><a href="/docs/runbook-format">Author your own runbook</a></li>
+    <li><a href="/docs/configuration">Tune inventory and concurrency</a></li>
+    <li><a href="/docs/security">Read the security model</a></li>
+  </ul>
+</DocsLayout>

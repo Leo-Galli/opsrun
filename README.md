@@ -5,7 +5,7 @@
 <img src="https://readme-typing-svg.demolab.com?font=IBM+Plex+Mono&weight=500&size=16&color=38BDF8&center=true&vCenter=true&width=680&height=34&duration=2800&pause=1200&lines=Markdown+runbooks+to+safe+SSH+workflows;DAG+%7C+rollback+%7C+approvals+%7C+audit;Nine+ready+incident+runbooks;Go+CLI+%2B+Bubble+Tea+TUI" alt="OpsRun tagline" />
 
 <p>
-  <a href="https://github.com/Leo-Galli/opsrun"><img src="https://skillicons.dev/icons?i=github,go,docker,md,bash,linux&theme=dark&perline=6" alt="GitHub, Go, Docker, Markdown, Bash, Linux" /></a>
+  <a href="https://github.com/Leo-Galli/opsrun"><img src="https://skillicons.dev/icons?i=github,go,docker,md,bash,linux,astro&theme=dark&perline=7" alt="GitHub, Go, Docker, Markdown, Bash, Linux, Astro" /></a>
 </p>
 
 <p>
@@ -179,6 +179,7 @@ Full grammar: [`docs/runbook-spec.md`](docs/runbook-spec.md).
 | `cmd/opsrun` | Cobra CLI + Bubble Tea TUI |
 | `internal/` | Parser, DAG engine, SSH transport, audit, approval |
 | `examples/runbooks/` | Nine ready incident runbooks |
+| `website/` | Product site + docs (Astro) → [opsrun.vercel.app](https://opsrun.vercel.app) |
 | `docs/` | Spec, architecture, issue/PR guidelines |
 | `.github/` | CI, issue forms, PR template |
 | `opsrun.yaml` | Sample inventory and runtime config |
@@ -195,6 +196,7 @@ Full grammar: [`docs/runbook-spec.md`](docs/runbook-spec.md).
 | CLI / TUI | Cobra, Bubble Tea, Lip Gloss |
 | Runbooks | Markdown (goldmark AST) + YAML front matter |
 | Remote exec | SSH via `golang.org/x/crypto/ssh` |
+| Website | Astro + Tailwind (`website/`, deploy Root Directory `website`) |
 | Release | GoReleaser, SBOM, multi-arch image on `ghcr.io` |
 
 <img src="https://capsule-render.vercel.app/api?type=rect&height=3&color=0:0b1220,35:38bdf8,70:c9a227,100:0b1220" width="100%" alt="" />

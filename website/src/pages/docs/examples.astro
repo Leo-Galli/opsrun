@@ -1,0 +1,69 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+import { runbooks, githubRepo } from '../../data/runbooks'
+---
+
+<DocsLayout
+  title="Examples"
+  description="The nine bundled OpsRun runbooks: when to use each, and how to validate them locally."
+  path="/docs/examples"
+>
+  <p>
+    All examples live in
+    <a href={`${githubRepo}/tree/main/examples/runbooks`} rel="noopener noreferrer" target="_blank">examples/runbooks/</a>
+    and are exercised by the test suite. Copy one, change variables and groups, keep the
+    safety shape (checks, confirm, rollback).
+  </p>
+
+  <h2 id="catalog">Catalog</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>File</th>
+        <th>Severity</th>
+        <th>Use when</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        runbooks.map((rb) => (
+          <tr>
+            <td>
+              <a
+                href={`${githubRepo}/blob/main/examples/runbooks/${rb.file}`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {rb.file}
+              </a>
+            </td>
+            <td>{rb.severity}</td>
+            <td>{rb.summary}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <h2 id="local">Validate locally</h2>
+  <pre><code>opsrun validate examples/runbooks/full-disk.md
+opsrun plan examples/runbooks/db-failover.md --var primary_host=db-1 --var replica_host=db-2
+opsrun plan examples/runbooks/lb-node-drain.md --var lb_api_token=dummy
+opsrun plan examples/runbooks/rolling-deploy.md --var release_tag=v1.4.2
+opsrun plan examples/runbooks/runaway-process.md --var process_name=worker
+opsrun plan examples/runbooks/cert-renewal.md --var domain=example.com</code></pre>
+
+  <h2 id="tips">Authoring tips</h2>
+  <ul>
+    <li>Start with a <code>read_only: true</code> diagnostic step.</li>
+    <li>Put <code>confirm: true</code> on anything destructive.</li>
+    <li>Always pair risky <code>opsrun:run</code> blocks with <code>opsrun:rollback</code>.</li>
+    <li>Mark tokens and passwords <code>secret: true</code>.</li>
+    <li>Prefer rolling or canary for fleet-wide changes.</li>
+  </ul>
+
+  <p>
+    Grammar details: <a href="/docs/runbook-format">Runbook format</a>. Browse UI list:
+    <a href="/runbooks">Runbooks</a>.
+  </p>
+</DocsLayout>

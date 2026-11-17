@@ -1,0 +1,70 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="Security"
+  description="Fail-closed defaults for SSH, secrets, approvals, rollback, and audit integrity."
+  path="/docs/security"
+>
+  <p>
+    OpsRun is built for incident response: it will run powerful commands on remote
+    hosts. Defaults aim to make silent skips and invisible side effects hard.
+  </p>
+
+  <h2 id="validate">Validate before execute</h2>
+  <p>
+    Nothing runs until the runbook is parsed and validated. Operators can always use
+    <code>--dry-run</code> to preview. Denylist matches fail closed.
+  </p>
+
+  <h2 id="ssh">SSH host keys</h2>
+  <p>
+    Verification against <code>known_hosts</code> is mandatory. Bypassing it requires an
+    explicit flag and prints a loud warning. Prefer updating known_hosts.
+  </p>
+
+  <h2 id="secrets">Secrets</h2>
+  <ul>
+    <li>Declare sensitive vars with <code>secret: true</code>.</li>
+    <li>Resolve values through the secret provider (env prefix / files).</li>
+    <li>
+      Real values are used only in the command sent to the host. Approvals, TUI, events,
+      and audit entries show <code>***REDACTED***</code>.
+    </li>
+  </ul>
+
+  <h2 id="approvals">Approvals</h2>
+  <p>
+    Modes <code>per_step</code> and <code>all</code> force a human to see the
+    interpolated command and target list before execution. Use
+    <code>confirm: true</code> on destructive steps even when the runbook default is
+    looser.
+  </p>
+
+  <h2 id="rollback">Rollback</h2>
+  <p>
+    Destructive patterns without an <code>opsrun:rollback</code> block produce
+    validator warnings. On failure, completed destructive steps reverse in dependency
+    order.
+  </p>
+
+  <h2 id="audit">Audit integrity</h2>
+  <p>
+    The audit log is append-only JSONL. Each record embeds the SHA-256 of the previous
+    record. Optional Ed25519 signing strengthens non-repudiation. Verify with:
+  </p>
+  <pre><code>opsrun audit verify --log ./audit/opsrun-audit.jsonl</code></pre>
+
+  <h2 id="privilege">Least privilege</h2>
+  <p>
+    No persistent agent or always-elevated daemon on targets. Standard SSH is enough.
+    Use non-interactive sudo only for the commands that need it.
+  </p>
+
+  <h2 id="reporting">Vulnerability reporting</h2>
+  <p>
+    Do not file public issues for security bugs. Follow
+    <a href="https://github.com/Leo-Galli/opsrun/blob/main/SECURITY.md" rel="noopener noreferrer" target="_blank">SECURITY.md</a>.
+  </p>
+</DocsLayout>

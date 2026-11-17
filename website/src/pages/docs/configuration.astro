@@ -1,0 +1,102 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro'
+---
+
+<DocsLayout
+  title="Configuration"
+  description="opsrun.yaml inventory, concurrency, timeouts, audit, approval defaults, and secrets."
+  path="/docs/configuration"
+>
+  <p>
+    Pass a config file with <code>--config</code> or set <code>OPSRUN_CONFIG</code>.
+    Values are overridden by <code>OPSRUN_*</code> environment variables and then by
+    CLI flags.
+  </p>
+
+  <h2 id="sample">Sample opsrun.yaml</h2>
+  <pre><code>hosts:
+  - name: web-1
+    address: 10.0.1.10
+    port: 22
+    user: ops
+    identity_file: ~/.ssh/id_ed25519
+    groups: [web]
+
+  - name: db-1
+    address: 10.0.2.10
+    port: 22
+    user: ops
+    identity_file: ~/.ssh/id_ed25519
+    proxy_jump: bastion.internal:22
+    groups: [db]
+
+concurrency:
+  global_max_connections: 50
+  per_host_max_sessions: 2
+  max_parallel_steps: 10
+
+timeouts:
+  connect: 10s
+  command: 5m
+  idle: 1m
+
+audit:
+  log_path: ./audit/opsrun-audit.jsonl
+  signing_key_path: ""
+
+approval:
+  mode: per_step
+  timeout: 5m
+
+secrets:
+  env_prefix: OPSRUN_SECRET_
+  files_dir: ""</code></pre>
+
+  <h2 id="hosts">Hosts and groups</h2>
+  <ul>
+    <li><code>name</code> — inventory id referenced by plans and audit</li>
+    <li><code>address</code>, <code>port</code>, <code>user</code></li>
+    <li><code>identity_file</code> — private key path</li>
+    <li><code>proxy_jump</code> — optional bastion</li>
+    <li><code>groups</code> — labels used by runbook <code>targets: - group:</code></li>
+  </ul>
+
+  <h2 id="concurrency">Concurrency</h2>
+  <p>
+    Cap global SSH connections, per-host sessions, and parallel DAG steps. Keep these
+    conservative on shared bastions.
+  </p>
+
+  <h2 id="timeouts">Timeouts</h2>
+  <p>
+    Connect, command, and idle timeouts are Go duration strings (<code>10s</code>,
+    <code>5m</code>). Step-level <code>timeout=</code> on <code>opsrun:run</code> can
+    tighten a single action.
+  </p>
+
+  <h2 id="audit">Audit</h2>
+  <p>
+    <code>log_path</code> is the JSONL audit sink. Optional
+    <code>signing_key_path</code> enables Ed25519 signing of records.
+  </p>
+
+  <h2 id="approval">Approval defaults</h2>
+  <p>
+    Runbook front matter can override mode and timeout. Per-step directives can override
+    again. Modes: <code>none</code>, <code>per_step</code>, <code>all</code>.
+  </p>
+
+  <h2 id="secrets">Secrets</h2>
+  <p>
+    Environment variables under <code>secrets.env_prefix</code> (default
+    <code>OPSRUN_SECRET_</code>) and optional files under <code>files_dir</code> feed the
+    secret provider. Mark runbook vars with <code>secret: true</code> so interpolated
+    values never appear in logs or audit plaintext.
+  </p>
+
+  <h2 id="host-keys">SSH host keys</h2>
+  <p>
+    Host-key verification against <code>known_hosts</code> is required. Disabling it is
+    an explicit, warned opt-out. Prefer fixing known_hosts over bypassing checks.
+  </p>
+</DocsLayout>

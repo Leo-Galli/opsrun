@@ -21,6 +21,10 @@ coverage.html
 
 # Dependency directories
 vendor/
+website/node_modules/
+website/dist/
+website/.astro/
+website/.vercel/
 
 # Editor / IDE
 .vscode/

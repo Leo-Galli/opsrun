@@ -1,0 +1,38 @@
+---
+const path = Astro.url.pathname.replace(/\/$/, '') || '/'
+
+const links = [
+  { href: '/docs', label: 'Docs', match: '/docs' },
+  { href: '/runbooks', label: 'Runbooks', match: '/runbooks' },
+  { href: '/install', label: 'Install', match: '/install' },
+]
+
+const isActive = (match: string) => path === match || path.startsWith(`${match}/`)
+---
+
+<header class="border border-b-0 border-rule bg-sheet px-6 sm:px-10 lg:px-14">
+  <div class="flex h-12 items-center justify-between">
+    <a href="/" class="text-[14px] font-semibold text-fg" aria-label="OpsRun home">OpsRun</a>
+    <nav class="flex items-center gap-4 text-[13px]" aria-label="Primary">
+      {
+        links.map((link) => (
+          <a
+            href={link.href}
+            class:list={[isActive(link.match) ? 'font-medium text-fg' : 'text-fg-3 hover:text-fg']}
+            aria-current={isActive(link.match) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <a
+        href="https://github.com/Leo-Galli/opsrun"
+        class="text-fg-3 hover:text-fg"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
